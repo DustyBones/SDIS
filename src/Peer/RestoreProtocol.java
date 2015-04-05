@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -52,7 +53,7 @@ public class RestoreProtocol {
             filter = Util.filterChunks(chunkInfo, fileID);
             peerPacket = new DatagramPacket(chunkBuf, chunkBuf.length);
             for (String[] chunk : filter) {
-                buf = buildHeader(chunk).getBytes();
+                buf = buildHeader(chunk).getBytes(StandardCharsets.ISO_8859_1);
                 controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.MCport);
                 controlSocket.send(controlPacket);
                 answered = false;
@@ -60,6 +61,10 @@ public class RestoreProtocol {
                 do {
                     try {
                         restoreSocket.receive(peerPacket);
+                        String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
+                        int j = z.indexOf("\r\n\r\n");
+                        z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
+                        System.out.println("RestoreProtocol - Received from " + peerPacket.getAddress() + ": " + z);
                         if (answered = peerAnswered(peerPacket, chunk))
                             break;
                     } catch (Exception ignore) {
@@ -67,7 +72,7 @@ public class RestoreProtocol {
                     t1 = System.currentTimeMillis();
                 } while (t1 - t0 < 30000);
                 if (answered) {
-                    String s = new String(peerPacket.getData(), 0, peerPacket.getLength());
+                    String s = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
                     int i = s.indexOf("\r\n\r\n");
                     bos.write(Arrays.copyOfRange(peerPacket.getData(), i + 4, peerPacket.getLength()));
                     bos.flush();
@@ -91,9 +96,9 @@ public class RestoreProtocol {
     }
 
     static boolean peerAnswered(DatagramPacket peerPacket, String[] chunk) {
-        String s = new String(peerPacket.getData(), 0, peerPacket.getLength());
+        String s = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
         int i = s.indexOf("\r\n\r\n");
-        s = new String(peerPacket.getData(), 0, i);
+        s = new String(peerPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
         String[] msg = s.split("[ ]+");
 
         return (msg[0].trim().equals("CHUNK") && msg[2].trim().equals(chunk[0]) && msg[3].trim().equals(chunk[1]));

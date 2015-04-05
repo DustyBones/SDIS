@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class BackupThread extends Thread {
@@ -27,9 +28,11 @@ public class BackupThread extends Thread {
             chunkPacket = new DatagramPacket(buf, buf.length);
             while (Peer.running) try {
                 backupSocket.receive(chunkPacket);
-                received = new String(chunkPacket.getData(), 0, 86);
+                received = new String(chunkPacket.getData(), 0, chunkPacket.getLength(), StandardCharsets.ISO_8859_1);
                 header = received.split("[ ]+");
-                body = Arrays.copyOfRange(chunkPacket.getData(), 86, chunkPacket.getLength());
+                int i = received.indexOf("\r\n\r\n");
+                received = new String(chunkPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
+                body = Arrays.copyOfRange(chunkPacket.getData(), i + 4, chunkPacket.getLength());
                 System.out.println("BackupThread - Received from " + chunkPacket.getAddress() + ": " + received);
                 if (header[0].equals("PUTCHUNK")) {
                     if (!(file = new File(header[2] + ".part" + header[3])).isFile()) {
@@ -40,7 +43,7 @@ public class BackupThread extends Thread {
                         bos.flush();
                         bos.close();
                     }
-                    ack = buildHeader(header).getBytes();
+                    ack = buildHeader(header).getBytes(StandardCharsets.ISO_8859_1);
                     ackPacket = new DatagramPacket(ack, ack.length, Peer.getMCip(), Peer.getMCport());
                     Util.wait(Util.getRandomInt(400));
                     backupSocket.send(ackPacket);

@@ -24,6 +24,7 @@ public class Util {
         for (byte aHash : hash) {
             sb.append(Integer.toString((aHash & 0xff) + 0x100, 16).substring(1));
         }
+        fis.close();
         return sb.toString();
     }
 
@@ -59,14 +60,16 @@ public class Util {
                 token = chunk.split("[,]");
                 list.add(token);
             }
+            br.close();
         }
         return list;
     }
 
     public static void saveChunkInfo(ArrayList<String[]> list) throws Exception {
         File fout = new File("chunkInfo.csv");
-        if (!fout.isFile())
+        if (!fout.isFile()) {
             fout.createNewFile();
+        }
         FileOutputStream fos = new FileOutputStream(fout);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
         for (String[] chunk : list) {
@@ -74,6 +77,7 @@ public class Util {
             bw.newLine();
         }
         bw.close();
+
     }
 
     public static ArrayList<String[]> loadFileInfo() throws Exception {
@@ -88,6 +92,7 @@ public class Util {
                 token = chunk.split("[,]");
                 list.add(token);
             }
+            br.close();
         }
         return list;
     }

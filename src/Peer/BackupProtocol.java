@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -45,7 +46,7 @@ public class BackupProtocol {
             IPlist = new ArrayList<>();
             int k;
             while ((k = fis.read(chunkBuf)) > -1) {
-                msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, args[2]).getBytes(), Arrays.copyOfRange(chunkBuf, 0, k));
+                msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, args[2]).getBytes(StandardCharsets.ISO_8859_1), Arrays.copyOfRange(chunkBuf, 0, k));
                 chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCBip(), Peer.getMCBport());
                 ackPacket = new DatagramPacket(buf, buf.length);
                 attempt = 1;
@@ -101,7 +102,7 @@ public class BackupProtocol {
 
     static boolean validateAcknowledge(DatagramPacket ack, ArrayList<InetAddress> ip, String fileID, int chunk) {
         boolean exists = false;
-        String s = new String(ack.getData(), 0, ack.getLength());
+        String s = new String(ack.getData(), 0, ack.getLength(), StandardCharsets.ISO_8859_1);
         String[] msg = s.split("[ ]+");
 
         if (msg[0].trim().equals("STORED") && msg[2].trim().equals(fileID) && Integer.parseInt(msg[3]) == chunk) {

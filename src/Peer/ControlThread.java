@@ -2,6 +2,7 @@ package Peer;
 
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
+import java.nio.charset.StandardCharsets;
 
 public class ControlThread extends Thread {
 
@@ -21,7 +22,7 @@ public class ControlThread extends Thread {
 
             while (Peer.running) try {
                 controlSocket.receive(dataPacket);
-                received = new String(dataPacket.getData(), 0, dataPacket.getLength() - 2);
+                received = new String(dataPacket.getData(), 0, dataPacket.getLength() - 4, StandardCharsets.ISO_8859_1);
                 System.out.print("ControlThread - Received from " + dataPacket.getAddress() + ": " + received);
             } catch (Exception ignore) {
             }

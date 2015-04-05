@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class RestoreThread extends Thread {
@@ -36,7 +37,7 @@ public class RestoreThread extends Thread {
 
             while (Peer.running) try {
                 controlSocket.receive(requestPacket);
-                String s = new String(requestPacket.getData(), 0, requestPacket.getLength());
+                String s = new String(requestPacket.getData(), 0, requestPacket.getLength(), StandardCharsets.ISO_8859_1);
                 token = s.split("[ ]+");
                 if (validRequest(token)) {
                     answered = false;
@@ -45,15 +46,20 @@ public class RestoreThread extends Thread {
                     file = new File(token[2] + ".part" + token[3]);
                     fis = new FileInputStream(file);
                     k = fis.read(chunkBuf);
-                    msg = Util.concatenateByteArrays(buildHeader(token[2], Integer.parseInt(token[3])).getBytes(), Arrays.copyOfRange(chunkBuf, 0, k));
+                    msg = Util.concatenateByteArrays(buildHeader(token[2], Integer.parseInt(token[3])).getBytes(StandardCharsets.ISO_8859_1), Arrays.copyOfRange(chunkBuf, 0, k));
                     chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCRip(), Peer.getMCRport());
                     do {
                         try {
                             restoreSocket.receive(peerPacket);
-                            if (answered = peerAnswered(peerPacket, token))
-                                break;
+                            String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
+                            int j = z.indexOf("\r\n\r\n");
+                            z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
+                            System.out.println("RestoreThread - Received from " + peerPacket.getAddress() + ": " + z);
+                            answered = peerAnswered(peerPacket, token);
                         } catch (Exception ignore) {
                         }
+                        if (answered)
+                            break;
                         t1 = System.currentTimeMillis();
                     } while (t1 - t0 < time);
                     if (!answered) {
@@ -83,7 +89,7 @@ public class RestoreThread extends Thread {
     }
 
     boolean peerAnswered(DatagramPacket peer, String[] requestToken) {
-        String s = new String(peer.getData(), 0, peer.getLength());
+        String s = new String(peer.getData(), 0, peer.getLength(), StandardCharsets.ISO_8859_1);
         String[] peerToken = s.split("[ ]");
         return peerToken[0].trim().equals("CHUNK")
                 && peerToken[2].trim().equals(requestToken[2].trim())

@@ -5,13 +5,13 @@ import java.net.InetAddress;
 import java.util.Scanner;
 
 public class Peer {
-    public static volatile boolean running = true;
-    protected static InetAddress MCip;
-    protected static int MCport;
-    protected static InetAddress MCBip;
-    protected static int MCBport;
-    protected static InetAddress MCRip;
-    protected static int MCRport;
+    protected static volatile boolean running = true;
+    static InetAddress MCip;
+    static int MCport;
+    static InetAddress MCBip;
+    static int MCBport;
+    static InetAddress MCRip;
+    static int MCRport;
 
     public static InetAddress getMCip() {
         return MCip;
@@ -79,11 +79,9 @@ public class Peer {
                         break;
                     case "2":
                         RestoreProtocol.run(cmd);
-                        System.out.println("Restoration complete");
                         break;
                     case "3":
                         DeleteProtocol.run(cmd);
-                        System.out.println("Deletion complete.");
                         break;
                     case "4":
                         System.out.println("Possible operations:\n" +
@@ -139,17 +137,17 @@ public class Peer {
                 tokens[2] = "1";
                 break;
             case "4":
-                tokens = new String[3];
+                tokens = new String[2];
                 tokens[0] = "2";
                 tokens[1] = "test.txt";
                 break;
             case "5":
-                tokens = new String[3];
+                tokens = new String[2];
                 tokens[0] = "2";
                 tokens[1] = "test.jpg";
                 break;
             case "6":
-                tokens = new String[3];
+                tokens = new String[2];
                 tokens[0] = "2";
                 tokens[1] = "CharacterBuilder.zip";
                 break;
