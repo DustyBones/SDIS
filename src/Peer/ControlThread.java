@@ -23,7 +23,7 @@ public class ControlThread extends Thread {
             while (Peer.running) try {
                 controlSocket.receive(dataPacket);
                 received = new String(dataPacket.getData(), 0, dataPacket.getLength() - 4, StandardCharsets.ISO_8859_1);
-                System.out.print("ControlThread - Received from " + dataPacket.getAddress() + ": " + received);
+                System.out.println("ControlThread - Received from " + dataPacket.getAddress() + ": " + received);
             } catch (Exception ignore) {
             }
             controlSocket.leaveGroup(Peer.getMCip());

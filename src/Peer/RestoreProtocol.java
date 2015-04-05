@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -17,7 +18,7 @@ public class RestoreProtocol {
         FileOutputStream fos;
         BufferedOutputStream bos;
         String fileID;
-        boolean answered;
+        boolean answered, fail = false;
         long t0, t1;
         byte[] chunkBuf, buf;
         ArrayList<String[]> chunkInfo, fileInfo, filter;
@@ -78,17 +79,21 @@ public class RestoreProtocol {
                     bos.flush();
                 } else {
                     System.out.println("Unable to restore chunk " + chunk[1] + ". Reverting...");
-                    file.deleteOnExit();
+                    fail = true;
                 }
             }
             bos.close();
             fos.close();
             controlSocket.close();
             restoreSocket.close();
+            if (fail) {
+                Files.delete(file.toPath());
+            } else {
+                System.out.println("Restoration complete.");
+            }
         } catch (Exception ignore) {
             //e.printStackTrace();
         }
-        System.out.println("Restoration complete.");
     }
 
     static String buildHeader(String[] cmd) {
