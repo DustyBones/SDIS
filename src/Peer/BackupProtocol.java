@@ -51,6 +51,7 @@ public class BackupProtocol {
                         }
                         t1 = System.currentTimeMillis();
                     } while (t1 - t0 < 500 * attempt);
+
                     attempt++;
                 } while (saved < Integer.parseInt(args[2]) && attempt <= 5);
                 //TODO repeat until factor has been reached
