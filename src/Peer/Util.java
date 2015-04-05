@@ -1,8 +1,8 @@
 package Peer;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Util {
@@ -48,4 +48,63 @@ public class Util {
         Random r = new Random();
         return r.nextInt(range);
     }
+
+    public static ArrayList<String[]> loadChunkInfo() throws Exception {
+        String chunk;
+        String[] token;
+        ArrayList<String[]> list = new ArrayList<>();
+        File fin = new File("chunkInfo.csv");
+        if (!fin.isFile())
+            fin.createNewFile();
+        FileInputStream fis = new FileInputStream(fin);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        while ((chunk = br.readLine()) != null) {
+            token = chunk.split("[,]");
+            list.add(token);
+        }
+        return list;
+    }
+
+    public static void saveChunkInfo(ArrayList<String[]> list) throws Exception {
+        File fout = new File("chunkInfo.csv");
+        if (!fout.isFile())
+            fout.createNewFile();
+        FileOutputStream fos = new FileOutputStream(fout);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+        for (String[] chunk : list) {
+            bw.write(chunk[0] + "," + chunk[1] + "," + chunk[2] + "," + chunk[3]);
+            bw.newLine();
+        }
+        bw.close();
+    }
+
+    public static ArrayList<String[]> loadFileInfo() throws Exception {
+        String chunk;
+        String[] token;
+        ArrayList<String[]> list = new ArrayList<>();
+        File fin = new File("fileInfo.csv");
+        if (!fin.isFile())
+            fin.createNewFile();
+        FileInputStream fis = new FileInputStream(fin);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        while ((chunk = br.readLine()) != null) {
+            token = chunk.split("[,]");
+            list.add(token);
+        }
+        return list;
+    }
+
+    public static void saveFileInfo(ArrayList<String[]> list) throws Exception {
+        File fout = new File("fileInfo.csv");
+        if (!fout.isFile())
+            fout.createNewFile();
+        FileOutputStream fos = new FileOutputStream(fout);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+        for (String[] chunk : list) {
+            bw.write(chunk[0] + "," + chunk[1]);
+            bw.newLine();
+        }
+        bw.close();
+    }
+
 }

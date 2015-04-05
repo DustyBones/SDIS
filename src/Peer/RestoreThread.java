@@ -1,7 +1,6 @@
 package Peer;
 
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class RestoreThread extends Thread {
@@ -21,10 +20,10 @@ public class RestoreThread extends Thread {
 
                 multiSocket.receive(dataPacket);
 
-                if (!InetAddress.getLocalHost().equals(dataPacket.getAddress())) {
+                // if (!InetAddress.getLocalHost().equals(dataPacket.getAddress())) {
                     received = new String(dataPacket.getData(), 0, dataPacket.getLength());
                     // System.out.println("RestoreThread - Received from " + dataPacket.getAddress() + ": " + received);
-                }
+                //}
                 multiSocket.leaveGroup(Peer.getMCip());
                 multiSocket.close();
             } catch (Exception e) {

@@ -69,6 +69,7 @@ public class Peer {
         while (Peer.running) {
             try {
                 MulticastSocket multiSocket = new MulticastSocket(Peer.getMCport());
+                multiSocket.setLoopbackMode(true);
                 byte[] buf;
                 String input = sc.nextLine();
                 buf = input.getBytes();
@@ -84,7 +85,6 @@ public class Peer {
                     case "1":
                         multiSocket.send(packet);
                         BackupProtocol.run(cmd);
-                        System.out.println("Backup complete.\n");
                         break;
                     case "2":
                         multiSocket.send(packet);

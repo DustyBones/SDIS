@@ -15,17 +15,27 @@ public class BackupProtocol {
         DatagramPacket chunkPacket, ackPacket;
         File file;
         FileInputStream fis;
-        String fileID, received;
+        String fileID;
         int chunkN, saved, attempt, timeout;
         long t0, t1;
         byte[] chunkBuf, buf, msg;
+        String[] temp;
         ArrayList<InetAddress> IPlist;
+        ArrayList<String[]> chunkInfo, fileInfo;
 
         try {
+            chunkInfo = Util.loadChunkInfo();
+            fileInfo = Util.loadFileInfo();
+            if (fileExists(fileInfo, args[1])) {
+                System.out.println("This file or a file with the same name was already backed up.\n");
+                return;
+            }
             backupSocket = new MulticastSocket(Peer.getMCBport());
             backupSocket.joinGroup(Peer.getMCBip());
+            backupSocket.setLoopbackMode(true);
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
+            controlSocket.setLoopbackMode(true);
             file = new File(args[1]);
             fis = new FileInputStream(file);
             fileID = Util.getFileID(args[1]);
@@ -49,30 +59,41 @@ public class BackupProtocol {
                     do {
                         try {
                             controlSocket.receive(ackPacket);
-                            if (!InetAddress.getLocalHost().equals(ackPacket.getAddress())) {
-                                received = new String(ackPacket.getData(), 0, ackPacket.getLength());
-                                System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + received);
-                                if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
-                                    saved++;
-                                }
+                            if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
+                                saved++;
                             }
                         } catch (SocketTimeoutException ignore) {
                         }
                         t1 = System.currentTimeMillis();
                     } while ((t1 - t0) < (500 * attempt));
-                    System.out.println("t: " + timeout + " a: " + attempt + " s: " + saved);
+                    //System.out.println("t: " + timeout + " a: " + attempt + " s: " + saved);
                     attempt++;
                 } while (saved < Integer.parseInt(args[2]) && attempt <= 5);
+                temp = new String[4];
+                temp[0] = fileID;
+                temp[1] = chunkN + "";
+                temp[2] = args[2];
+                temp[3] = saved + "";
+                chunkInfo.add(temp);
                 chunkN++;
             }
+            temp = new String[2];
+            temp[0] = args[1];
+            temp[1] = fileID;
+            fileInfo.add(temp);
             backupSocket.leaveGroup(Peer.getMCBip());
             backupSocket.close();
             controlSocket.leaveGroup(Peer.getMCip());
             controlSocket.close();
             fis.close();
+            Util.saveChunkInfo(chunkInfo);
+            Util.saveFileInfo(fileInfo);
+
         } catch (Exception ignore) {
             //e.printStackTrace();
         }
+
+        System.out.println("Backup complete.\n");
     }
 
     static String buildHeader(String fileID, int chunkN, String factor) {
@@ -96,6 +117,14 @@ public class BackupProtocol {
             } else {
                 return false;
             }
+        }
+        return false;
+    }
+
+    static boolean fileExists(ArrayList<String[]> list, String fileName) {
+        for (String[] file : list) {
+            if (file[0].equals(fileName))
+                return true;
         }
         return false;
     }
