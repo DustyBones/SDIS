@@ -22,9 +22,11 @@ public class ControlThread extends Thread {
 
                 multiSocket.receive(dataPacket);
 
+                received = new String(dataPacket.getData(), 0, dataPacket.getLength());
                 if (!InetAddress.getLocalHost().equals(dataPacket.getAddress())) {
-                    received = new String(dataPacket.getData(), 0, dataPacket.getLength());
-                    System.out.println("ControlThread - Request from " + dataPacket.getAddress() + ": " + received);
+                    System.out.println("ControlThread - Received from " + dataPacket.getAddress() + ": " + received);
+                } else {
+                    System.out.println("ControlThread - Sent from " + dataPacket.getAddress() + ": " + received);
                 }
                 multiSocket.leaveGroup(Peer.getMCip());
                 multiSocket.close();

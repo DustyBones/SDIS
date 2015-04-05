@@ -23,7 +23,7 @@ public class RestoreThread extends Thread {
 
                 if (!InetAddress.getLocalHost().equals(dataPacket.getAddress())) {
                     received = new String(dataPacket.getData(), 0, dataPacket.getLength());
-                    System.out.println("ControlThread - Request from " + dataPacket.getAddress() + ": " + received);
+                    System.out.println("RestoreThread - Received from " + dataPacket.getAddress() + ": " + received);
                 }
                 multiSocket.leaveGroup(Peer.getMCip());
                 multiSocket.close();
