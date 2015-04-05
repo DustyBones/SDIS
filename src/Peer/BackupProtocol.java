@@ -16,7 +16,7 @@ public class BackupProtocol {
         File file;
         FileInputStream fis;
         String fileID, received;
-        int chunkN = 0, saved, attempt, timeout = 200;
+        int chunkN, saved, attempt, timeout;
         long t0, t1;
         byte[] chunkBuf, buf, msg;
         ArrayList<InetAddress> IPlist;
@@ -25,11 +25,11 @@ public class BackupProtocol {
             backupSocket = new MulticastSocket(Peer.getMCBport());
             backupSocket.joinGroup(Peer.getMCBip());
             controlSocket = new MulticastSocket(Peer.getMCport());
-            controlSocket.setSoTimeout(timeout);
             controlSocket.joinGroup(Peer.getMCip());
             file = new File(args[1]);
             fis = new FileInputStream(file);
             fileID = Util.getFileID(args[1]);
+            chunkN = 0;
             chunkBuf = new byte[64000];
             buf = new byte[100];
             IPlist = new ArrayList<>();
@@ -38,11 +38,12 @@ public class BackupProtocol {
                 msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, args[2]).getBytes(), Arrays.copyOfRange(chunkBuf, 0, k));
                 chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCBip(), Peer.getMCBport());
                 ackPacket = new DatagramPacket(buf, buf.length);
-                chunkN++;
                 attempt = 1;
                 saved = 0;
                 IPlist.clear();
                 do {
+                    timeout = 500 * attempt / Integer.parseInt(args[2]);
+                    controlSocket.setSoTimeout(timeout);
                     backupSocket.send(chunkPacket);
                     t0 = System.currentTimeMillis();
                     do {
@@ -56,14 +57,13 @@ public class BackupProtocol {
                                 }
                             }
                         } catch (SocketTimeoutException ignore) {
-                            System.out.println("nothing received");
                         }
                         t1 = System.currentTimeMillis();
                     } while ((t1 - t0) < (500 * attempt));
+                    System.out.println("t: " + timeout + " a: " + attempt + " s: " + saved);
                     attempt++;
                 } while (saved < Integer.parseInt(args[2]) && attempt <= 5);
-                //TODO repeat until factor has been reached
-                //TODO save IPaddress from ack peers
+                chunkN++;
             }
             backupSocket.leaveGroup(Peer.getMCBip());
             backupSocket.close();
@@ -83,7 +83,8 @@ public class BackupProtocol {
         boolean exists = false;
         String s = new String(ack.getData(), 0, ack.getLength());
         String[] msg = s.split("[ ]+");
-        if (msg[0].equals("STORED") && msg[2].equals(fileID) && Integer.parseInt(msg[3]) == chunk) {
+
+        if (msg[0].trim().equals("STORED") && msg[2].trim().equals(fileID) && Integer.parseInt(msg[3]) == chunk) {
             for (InetAddress aIp : ip) {
                 if (aIp.equals(ack.getAddress())) {
                     exists = true;
@@ -91,8 +92,10 @@ public class BackupProtocol {
             }
             if (!exists) {
                 ip.add(ack.getAddress());
+                return true;
+            } else {
+                return false;
             }
-            return true;
         }
         return false;
     }
