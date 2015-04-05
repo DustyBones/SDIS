@@ -108,7 +108,7 @@ public class Peer {
                 }
                 multiSocket.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
         sc.close();

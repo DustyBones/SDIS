@@ -15,7 +15,7 @@ public class ControlThread extends Thread {
         while (Peer.running) {
             try {
                 multiSocket = new MulticastSocket(Peer.getMCport());
-                multiSocket.setSoTimeout(1000);
+                multiSocket.setSoTimeout(100);
                 multiSocket.joinGroup(Peer.getMCip());
                 buf = new byte[256];
                 dataPacket = new DatagramPacket(buf, buf.length);
