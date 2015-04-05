@@ -6,15 +6,16 @@ import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 
 public class BackupThread extends Thread {
     @Override
     public void run() {
         MulticastSocket multiSocket;
         DatagramPacket chunkPacket, ackPacket;
-        byte[] buf, ack;
+        byte[] buf, ack, body;
         String received;
-        String[] header, body;
+        String[] header;
         File file;
         FileOutputStream fos;
         BufferedOutputStream bos;
@@ -23,22 +24,22 @@ public class BackupThread extends Thread {
                 multiSocket = new MulticastSocket(Peer.getMCBport());
                 multiSocket.setSoTimeout(1000);
                 multiSocket.joinGroup(Peer.getMCBip());
-                buf = new byte[65500];
+                buf = new byte[64100];
                 chunkPacket = new DatagramPacket(buf, buf.length);
 
                 multiSocket.receive(chunkPacket);
                 //TODO filter owwn broadcasts
                 if (!InetAddress.getLocalHost().equals(chunkPacket.getAddress())) {
-                    received = new String(chunkPacket.getData(), 0, chunkPacket.getLength());
+                    received = new String(chunkPacket.getData(), 0, 86);
                     header = received.split("[ ]+");
-                    body = received.split("\\r\\n\\r\\n");
-                    System.out.println("BackupThread - Received from " + chunkPacket.getAddress() + ": " + body[0]);
+                    body = Arrays.copyOfRange(chunkPacket.getData(), 86, chunkPacket.getLength());
+                    System.out.println("BackupThread - Received from " + chunkPacket.getAddress() + ": " + received);
                     if (header[0].equals("PUTCHUNK")) {
                         if (!(file = new File(header[2] + ".part" + header[3])).isFile()) {
                             file.createNewFile();
                             fos = new FileOutputStream(file);
                             bos = new BufferedOutputStream(fos);
-                            bos.write(body[1].getBytes());
+                            bos.write(body);
                             bos.flush();
                             bos.close();
                         }

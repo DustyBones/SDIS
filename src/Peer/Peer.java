@@ -138,9 +138,15 @@ public class Peer {
             tokens[1] = "test.txt";
             tokens[2] = "1";
         } else if (s.equals("2")) {
-            tokens = new String[2];
-            tokens[0] = "2";
+            tokens = new String[3];
+            tokens[0] = "1";
             tokens[1] = "test.jpg";
+            tokens[2] = "2";
+        } else if (s.equals("3")) {
+            tokens = new String[3];
+            tokens[0] = "1";
+            tokens[1] = "CharacterBuilder.zip";
+            tokens[2] = "2";
         }
         //****************************************************
         return tokens;

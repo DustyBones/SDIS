@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.Arrays;
 
 public class BackupProtocol {
     public static void run(String[] args) {
@@ -22,11 +23,11 @@ public class BackupProtocol {
             file = new File(args[1]);
             fis = new FileInputStream(file);
             fileID = Util.getFileID(args[1]);
-            chunkBuf = new byte[65000];
-            buf = new byte[65000];
-
-            while (fis.read(chunkBuf) > -1) {
-                byte[] msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, args[2]).getBytes(), chunkBuf);
+            chunkBuf = new byte[64000];
+            buf = new byte[64000];
+            int k;
+            while ((k = fis.read(chunkBuf)) > -1) {
+                byte[] msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, args[2]).getBytes(), Arrays.copyOfRange(chunkBuf, 0, k));
                 chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCBip(), Peer.getMCBport());
                 ackPacket = new DatagramPacket(buf, buf.length);
                 chunkN++;
