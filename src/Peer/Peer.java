@@ -1,9 +1,7 @@
 package Peer;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.util.Scanner;
 
 public class Peer {
@@ -40,7 +38,6 @@ public class Peer {
     }
 
     public static void main(String[] args) throws IOException {
-
         if (args.length == 0) {
             MCip = InetAddress.getByName("225.0.0.1");
             MCport = 9001;
@@ -68,33 +65,25 @@ public class Peer {
         Scanner sc = new Scanner(System.in);
         while (Peer.running) {
             try {
-                MulticastSocket multiSocket = new MulticastSocket(Peer.getMCport());
-                multiSocket.setLoopbackMode(true);
-                byte[] buf;
                 String input = sc.nextLine();
-                buf = input.getBytes();
-                DatagramPacket packet = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.getMCport());
                 String[] cmd = validateCmd(input);
                 switch (cmd[0]) {
                     case "-1":
-                        System.out.println("Invalid command or filename, type 'help' for a list of options\n");
+                        System.out.println("Invalid command or filename, type 'help' for a list of options");
                         break;
                     case "0":
                         Peer.running = false;
                         break;
                     case "1":
-                        multiSocket.send(packet);
                         BackupProtocol.run(cmd);
                         break;
                     case "2":
-                        multiSocket.send(packet);
                         RestoreProtocol.run(cmd);
-                        System.out.println("Restoration complete\n");
+                        System.out.println("Restoration complete");
                         break;
                     case "3":
-                        multiSocket.send(packet);
                         DeleteProtocol.run(cmd);
-                        System.out.println("Deletion complete.\n");
+                        System.out.println("Deletion complete.");
                         break;
                     case "4":
                         System.out.println("Possible operations:\n" +
@@ -106,7 +95,6 @@ public class Peer {
                     default:
                         return;
                 }
-                multiSocket.close();
             } catch (Exception e) {
                 //e.printStackTrace();
             }
@@ -121,9 +109,9 @@ public class Peer {
         } else if (tokens[0].equals("backup") && tokens.length == 3 && Util.fileIsValid(tokens[1])
                 && Integer.parseInt(tokens[2]) > 0 && Integer.parseInt(tokens[2]) < 10) {
             tokens[0] = "1";
-        } else if (tokens[0].equals("restore") && tokens.length == 2 && Util.fileIsValid(tokens[1])) {
+        } else if (tokens[0].equals("restore") && tokens.length == 2) {
             tokens[0] = "2";
-        } else if (tokens[0].equals("delete") && tokens.length == 2 && Util.fileIsValid(tokens[1])) {
+        } else if (tokens[0].equals("delete") && tokens.length == 2) {
             tokens[0] = "3";
         } else if (tokens[0].equals("help") && tokens.length == 1) {
             tokens[0] = "4";
@@ -131,21 +119,40 @@ public class Peer {
             tokens[0] = "-1";
         }
         //*****************testing only************************
-        if (s.equals("1")) {
-            tokens = new String[3];
-            tokens[0] = "1";
-            tokens[1] = "test.txt";
-            tokens[2] = "1";
-        } else if (s.equals("2")) {
-            tokens = new String[3];
-            tokens[0] = "1";
-            tokens[1] = "test.jpg";
-            tokens[2] = "2";
-        } else if (s.equals("3")) {
-            tokens = new String[3];
-            tokens[0] = "1";
-            tokens[1] = "CharacterBuilder.zip";
-            tokens[2] = "1";
+        switch (s) {
+            case "1":
+                tokens = new String[3];
+                tokens[0] = "1";
+                tokens[1] = "test.txt";
+                tokens[2] = "1";
+                break;
+            case "2":
+                tokens = new String[3];
+                tokens[0] = "1";
+                tokens[1] = "test.jpg";
+                tokens[2] = "2";
+                break;
+            case "3":
+                tokens = new String[3];
+                tokens[0] = "1";
+                tokens[1] = "CharacterBuilder.zip";
+                tokens[2] = "1";
+                break;
+            case "4":
+                tokens = new String[3];
+                tokens[0] = "2";
+                tokens[1] = "test.txt";
+                break;
+            case "5":
+                tokens = new String[3];
+                tokens[0] = "2";
+                tokens[1] = "test.jpg";
+                break;
+            case "6":
+                tokens = new String[3];
+                tokens[0] = "2";
+                tokens[1] = "CharacterBuilder.zip";
+                break;
         }
         //****************************************************
         return tokens;

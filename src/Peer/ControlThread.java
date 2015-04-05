@@ -7,28 +7,29 @@ public class ControlThread extends Thread {
 
     @Override
     public void run() {
-        MulticastSocket multiSocket;
+        MulticastSocket controlSocket;
         DatagramPacket dataPacket;
         byte[] buf;
         String received;
-        while (Peer.running) {
-            try {
-                multiSocket = new MulticastSocket(Peer.getMCport());
-                multiSocket.setSoTimeout(100);
-                multiSocket.joinGroup(Peer.getMCip());
-                multiSocket.setLoopbackMode(true);
-                buf = new byte[256];
-                dataPacket = new DatagramPacket(buf, buf.length);
+        try {
+            controlSocket = new MulticastSocket(Peer.getMCport());
+            controlSocket.joinGroup(Peer.getMCip());
+            controlSocket.setLoopbackMode(true);
+            controlSocket.setSoTimeout(100);
+            buf = new byte[256];
+            dataPacket = new DatagramPacket(buf, buf.length);
 
-                multiSocket.receive(dataPacket);
-                received = new String(dataPacket.getData(), 0, dataPacket.getLength());
-                System.out.println("ControlThread - Received from " + dataPacket.getAddress() + ": " + received);
-
-                multiSocket.leaveGroup(Peer.getMCip());
-                multiSocket.close();
-            } catch (Exception e) {
-                //e.printStackTrace();
+            while (Peer.running) try {
+                controlSocket.receive(dataPacket);
+                received = new String(dataPacket.getData(), 0, dataPacket.getLength() - 2);
+                System.out.print("ControlThread - Received from " + dataPacket.getAddress() + ": " + received);
+            } catch (Exception ignore) {
             }
+            controlSocket.leaveGroup(Peer.getMCip());
+            controlSocket.close();
+        } catch (Exception e) {
+            //e.printStackTrace();
         }
     }
 }
+

@@ -8,9 +8,7 @@ import java.util.Random;
 public class Util {
 
     public static boolean fileIsValid(String file) {
-        if (new File(file).exists())
-            return true;
-        return false;
+        return new File(file).exists();
     }
 
     public static String getFileID(String file) throws Exception {
@@ -54,13 +52,13 @@ public class Util {
         String[] token;
         ArrayList<String[]> list = new ArrayList<>();
         File fin = new File("chunkInfo.csv");
-        if (!fin.isFile())
-            fin.createNewFile();
-        FileInputStream fis = new FileInputStream(fin);
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-        while ((chunk = br.readLine()) != null) {
-            token = chunk.split("[,]");
-            list.add(token);
+        if (fin.isFile()) {
+            FileInputStream fis = new FileInputStream(fin);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            while ((chunk = br.readLine()) != null) {
+                token = chunk.split("[,]");
+                list.add(token);
+            }
         }
         return list;
     }
@@ -83,13 +81,13 @@ public class Util {
         String[] token;
         ArrayList<String[]> list = new ArrayList<>();
         File fin = new File("fileInfo.csv");
-        if (!fin.isFile())
-            fin.createNewFile();
-        FileInputStream fis = new FileInputStream(fin);
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-        while ((chunk = br.readLine()) != null) {
-            token = chunk.split("[,]");
-            list.add(token);
+        if (fin.isFile()) {
+            FileInputStream fis = new FileInputStream(fin);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            while ((chunk = br.readLine()) != null) {
+                token = chunk.split("[,]");
+                list.add(token);
+            }
         }
         return list;
     }
@@ -105,6 +103,26 @@ public class Util {
             bw.newLine();
         }
         bw.close();
+    }
+
+    public static ArrayList<String[]> filterChunks(ArrayList<String[]> list, String fileID) {
+        ArrayList<String[]> filtered = new ArrayList<>();
+        for (String[] chunk : list) {
+            if (chunk[0].equals(fileID)) {
+                filtered.add(chunk);
+            }
+        }
+        return filtered;
+    }
+
+    public static String[] filterFiles(ArrayList<String[]> list, String fileName) {
+        String[] filtered = new String[2];
+        for (String[] file : list) {
+            if (file[0].equals(fileName)) {
+                filtered = file;
+            }
+        }
+        return filtered;
     }
 
 }

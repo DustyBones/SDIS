@@ -27,7 +27,7 @@ public class BackupProtocol {
             chunkInfo = Util.loadChunkInfo();
             fileInfo = Util.loadFileInfo();
             if (fileExists(fileInfo, args[1])) {
-                System.out.println("This file or a file with the same name was already backed up.\n");
+                System.out.println("This file or a file with the same name was already backed up.");
                 return;
             }
             backupSocket = new MulticastSocket(Peer.getMCBport());
@@ -52,7 +52,7 @@ public class BackupProtocol {
                 saved = 0;
                 IPlist.clear();
                 do {
-                    timeout = 500 * attempt / Integer.parseInt(args[2]);
+                    timeout = (int) (500 * Math.pow(2, attempt - 1) / Integer.parseInt(args[2]));
                     controlSocket.setSoTimeout(timeout);
                     backupSocket.send(chunkPacket);
                     t0 = System.currentTimeMillis();
@@ -65,8 +65,7 @@ public class BackupProtocol {
                         } catch (SocketTimeoutException ignore) {
                         }
                         t1 = System.currentTimeMillis();
-                    } while ((t1 - t0) < (500 * attempt));
-                    //System.out.println("t: " + timeout + " a: " + attempt + " s: " + saved);
+                    } while ((t1 - t0) < (500 * Math.pow(2, attempt - 1)));
                     attempt++;
                 } while (saved < Integer.parseInt(args[2]) && attempt <= 5);
                 temp = new String[4];
@@ -93,11 +92,11 @@ public class BackupProtocol {
             //e.printStackTrace();
         }
 
-        System.out.println("Backup complete.\n");
+        System.out.println("Backup complete.");
     }
 
     static String buildHeader(String fileID, int chunkN, String factor) {
-        return "PUTCHUNK 1.0" + " " + fileID + " " + chunkN + " " + factor + " \r\n\r\n";
+        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor + " \r\n\r\n";
     }
 
     static boolean validateAcknowledge(DatagramPacket ack, ArrayList<InetAddress> ip, String fileID, int chunk) {
