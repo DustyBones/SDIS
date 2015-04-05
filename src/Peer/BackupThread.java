@@ -28,7 +28,7 @@ public class BackupThread extends Thread {
                 chunkPacket = new DatagramPacket(buf, buf.length);
 
                 multiSocket.receive(chunkPacket);
-                //TODO filter owwn broadcasts
+
                 if (!InetAddress.getLocalHost().equals(chunkPacket.getAddress())) {
                     received = new String(chunkPacket.getData(), 0, 86);
                     header = received.split("[ ]+");
@@ -44,7 +44,7 @@ public class BackupThread extends Thread {
                             bos.close();
                         }
                         ack = buildHeader(header).getBytes();
-                        ackPacket = new DatagramPacket(ack, ack.length, Peer.getMCBip(), Peer.getMCBport());
+                        ackPacket = new DatagramPacket(ack, ack.length, Peer.getMCip(), Peer.getMCport());
                         Util.wait(Util.getRandomInt(400));
                         multiSocket.send(ackPacket);
                     }

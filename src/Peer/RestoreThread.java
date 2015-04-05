@@ -21,7 +21,6 @@ public class RestoreThread extends Thread {
 
                 multiSocket.receive(dataPacket);
 
-                //TODO filter owwn broadcasts
                 if (!InetAddress.getLocalHost().equals(dataPacket.getAddress())) {
                     received = new String(dataPacket.getData(), 0, dataPacket.getLength());
                     System.out.println("ControlThread - Request from " + dataPacket.getAddress() + ": " + received);

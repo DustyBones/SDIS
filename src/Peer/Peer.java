@@ -39,7 +39,6 @@ public class Peer {
         return MCRip;
     }
 
-    //backup test.jpg 1
     public static void main(String[] args) throws IOException {
 
         if (args.length == 0) {
@@ -146,7 +145,7 @@ public class Peer {
             tokens = new String[3];
             tokens[0] = "1";
             tokens[1] = "CharacterBuilder.zip";
-            tokens[2] = "2";
+            tokens[2] = "1";
         }
         //****************************************************
         return tokens;

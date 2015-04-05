@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 public class BackupProtocol {
     public static void run(String[] args) {
-        MulticastSocket multiSocket;
+        MulticastSocket backupSocket, controlSocket;
         DatagramPacket chunkPacket, ackPacket;
         File file;
         FileInputStream fis;
@@ -18,8 +18,10 @@ public class BackupProtocol {
         byte[] chunkBuf, buf;
 
         try {
-            multiSocket = new MulticastSocket(Peer.getMCBport());
-            multiSocket.joinGroup(Peer.getMCBip());
+            backupSocket = new MulticastSocket(Peer.getMCBport());
+            backupSocket.joinGroup(Peer.getMCBip());
+            controlSocket = new MulticastSocket(Peer.getMCport());
+            controlSocket.joinGroup(Peer.getMCip());
             file = new File(args[1]);
             fis = new FileInputStream(file);
             fileID = Util.getFileID(args[1]);
@@ -33,20 +35,25 @@ public class BackupProtocol {
                 chunkN++;
                 attempt = 0;
                 saved = 0;
-                multiSocket.send(chunkPacket);
-                multiSocket.setSoTimeout(timeout * attempt);
-                Util.wait(Util.getRandomInt(1000));
-                multiSocket.receive(ackPacket);
-                if (!InetAddress.getLocalHost().equals(ackPacket.getAddress())) {
-                    received = new String(ackPacket.getData(), 0, ackPacket.getLength());
-                    System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + received);
-                }
-
+                do {
+                    backupSocket.send(chunkPacket);
+                    backupSocket.setSoTimeout(timeout * attempt);
+                    Util.wait(Util.getRandomInt(1000));
+                    controlSocket.receive(ackPacket);
+                    if (!InetAddress.getLocalHost().equals(ackPacket.getAddress())) {
+                        received = new String(ackPacket.getData(), 0, ackPacket.getLength());
+                        System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + received);
+                        if (validateAcknowledge(received)) {
+                            saved++;
+                        }
+                    }
+                    attempt++;
+                } while (saved < Integer.parseInt(args[2]) && attempt < 5);
                 //TODO repeat until factor has been reached
                 //TODO save IPaddress from ack peers
             }
-            multiSocket.leaveGroup(Peer.getMCBip());
-            multiSocket.close();
+            backupSocket.leaveGroup(Peer.getMCBip());
+            backupSocket.close();
         } catch (Exception e) {
             //e.printStackTrace();
         }
