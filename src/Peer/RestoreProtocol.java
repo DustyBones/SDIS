@@ -41,8 +41,8 @@ public class RestoreProtocol {
             fos = new FileOutputStream(file);
             bos = new BufferedOutputStream(fos);
 
-            restoreSocket = new MulticastSocket(Peer.getMCBport());
-            restoreSocket.joinGroup(Peer.getMCBip());
+            restoreSocket = new MulticastSocket(Peer.getMCRport());
+            restoreSocket.joinGroup(Peer.getMCRip());
             restoreSocket.setLoopbackMode(true);
             restoreSocket.setSoTimeout(100);
             controlSocket = new MulticastSocket(Peer.getMCport());

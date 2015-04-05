@@ -40,11 +40,11 @@ public class Peer {
     public static void main(String[] args) throws IOException {
         if (args.length == 0) {
             MCip = InetAddress.getByName("225.0.0.1");
-            MCport = 22500;
+            MCport = 9001;
             MCBip = InetAddress.getByName("225.0.0.1");
-            MCBport = 22501;
+            MCBport = 9002;
             MCRip = InetAddress.getByName("225.0.0.1");
-            MCRport = 22502;
+            MCRport = 9003;
         } else if (args.length == 6) {
             MCip = InetAddress.getByName(args[0]);
             MCport = Integer.parseInt(args[1]);
@@ -128,7 +128,7 @@ public class Peer {
                 tokens = new String[3];
                 tokens[0] = "1";
                 tokens[1] = "test.jpg";
-                tokens[2] = "2";
+                tokens[2] = "1";
                 break;
             case "3":
                 tokens = new String[3];

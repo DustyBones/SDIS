@@ -40,7 +40,6 @@ public class RestoreThread extends Thread {
                 String s = new String(requestPacket.getData(), 0, requestPacket.getLength(), StandardCharsets.ISO_8859_1);
                 token = s.split("[ ]+");
                 if (validRequest(token)) {
-                    System.out.println("i have it");
                     answered = false;
                     time = Util.getRandomInt(400);
                     t0 = System.currentTimeMillis();
