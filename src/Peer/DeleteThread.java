@@ -48,7 +48,16 @@ public class DeleteThread extends Thread {
                     Util.saveLocalChunkInfo(localChunkInfo);
                 } else if (msg[0].equals("REMOVED")) {
                     System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
-                    //TODO
+                    localChunkInfo = Util.loadLocalChunkInfo();
+                    for (String[] chunk : localChunkInfo) {
+                        if (chunk[0].equals(msg[2]) && chunk[1].equals(msg[3])) {
+                            chunk[4] = (Integer.parseInt(chunk[4]) - 1) + "";
+                            Util.saveLocalChunkInfo(localChunkInfo);
+                            if (Integer.parseInt(chunk[4]) < Integer.parseInt(chunk[3]))
+                                BackupProtocol.run(chunk, true);
+                            break;
+                        }
+                    }
                 }
             } catch (Exception ignore) {
             }

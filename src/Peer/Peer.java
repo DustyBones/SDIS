@@ -76,7 +76,7 @@ public class Peer {
                         Peer.running = false;
                         break;
                     case 1:
-                        BackupProtocol.run(cmd);
+                        BackupProtocol.run(cmd, false);
                         break;
                     case 2:
                         RestoreProtocol.run(cmd);

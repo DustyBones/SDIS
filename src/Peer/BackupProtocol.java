@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BackupProtocol {
-    public static void run(String[] args) {
+    public static void run(String[] args, boolean chunk) {
         MulticastSocket backupSocket, controlSocket;
         DatagramPacket chunkPacket, ackPacket;
         File file;
@@ -27,7 +27,8 @@ public class BackupProtocol {
         try {
             chunkInfo = Util.loadRemoteChunkInfo();
             fileInfo = Util.loadFileInfo();
-            file = new File(args[1]);
+            file = new File(chunk ? args[0] + ".part" + args[1] : args[1]);
+
             if (Util.fileExists(fileInfo, file)) {
                 System.out.println("BackupProtocol - File was already backed up");
                 return;
@@ -39,14 +40,14 @@ public class BackupProtocol {
             controlSocket.joinGroup(Peer.getMCip());
             controlSocket.setLoopbackMode(true);
             fis = new FileInputStream(file);
-            fileID = Util.getFileID(args[1]);
-            chunkN = 0;
+            fileID = (chunk ? args[0] : Util.getFileID(args[1]));
+            chunkN = (chunk ? Integer.parseInt(args[1]) : 0);
             chunkBuf = new byte[64000];
             buf = new byte[100];
             IPlist = new ArrayList<>();
             int k;
             while ((k = fis.read(chunkBuf)) > -1) {
-                msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, args[2]).getBytes(StandardCharsets.ISO_8859_1), Arrays.copyOfRange(chunkBuf, 0, k));
+                msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, (chunk ? args[3] : args[2])).getBytes(StandardCharsets.ISO_8859_1), Arrays.copyOfRange(chunkBuf, 0, k));
                 chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCBip(), Peer.getMCBport());
                 ackPacket = new DatagramPacket(buf, buf.length);
                 attempt = 1;
@@ -61,7 +62,6 @@ public class BackupProtocol {
                         try {
                             controlSocket.receive(ackPacket);
                             String z = new String(ackPacket.getData(), 0, ackPacket.getLength(), StandardCharsets.ISO_8859_1);
-                            //int j = z.indexOf("\r\n\r\n");
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(ackPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
                             System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + z);
@@ -92,8 +92,12 @@ public class BackupProtocol {
             controlSocket.leaveGroup(Peer.getMCip());
             controlSocket.close();
             fis.close();
-            Util.saveRemoteChunkInfo(chunkInfo);
-            Util.saveFileInfo(fileInfo);
+            if (chunk) {
+                Util.saveLocalChunkInfo(chunkInfo);
+            } else {
+                Util.saveRemoteChunkInfo(chunkInfo);
+                Util.saveFileInfo(fileInfo);
+            }
             System.out.println("BackupProtocol - Finished.");
         } catch (Exception ignore) {
             //e.printStackTrace();
