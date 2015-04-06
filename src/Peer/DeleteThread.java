@@ -10,14 +10,13 @@ public class DeleteThread extends Thread {
 
     @Override
     public void run() {
-
         MulticastSocket controlSocket;
         DatagramPacket dataPacket;
         byte[] buf;
         String received;
         String[] msg;
         int i;
-        ArrayList<String[]> localChunkInfo, filter;
+        ArrayList<String[]> localChunkInfo, remoteChunkInfo, filter;
         try {
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
@@ -25,7 +24,6 @@ public class DeleteThread extends Thread {
             controlSocket.setSoTimeout(100);
             buf = new byte[256];
             dataPacket = new DatagramPacket(buf, buf.length);
-
             while (Peer.running) try {
                 controlSocket.receive(dataPacket);
                 received = new String(dataPacket.getData(), 0, dataPacket.getLength(), StandardCharsets.ISO_8859_1);
@@ -49,13 +47,20 @@ public class DeleteThread extends Thread {
                 } else if (msg[0].equals("REMOVED")) {
                     System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
                     localChunkInfo = Util.loadLocalChunkInfo();
+                    remoteChunkInfo = Util.loadRemoteChunkInfo();
                     for (String[] chunk : localChunkInfo) {
                         if (chunk[0].equals(msg[2]) && chunk[1].equals(msg[3])) {
                             chunk[4] = (Integer.parseInt(chunk[4]) - 1) + "";
                             Util.saveLocalChunkInfo(localChunkInfo);
                             if (Integer.parseInt(chunk[4]) < Integer.parseInt(chunk[3]))
                                 BackupProtocol.run(chunk, true);
-                            Util.wait(1000);
+                            break;
+                        }
+                    }
+                    for (String[] chunk : remoteChunkInfo) {
+                        if (chunk[0].equals(msg[2]) && chunk[1].equals(msg[3])) {
+                            chunk[4] = (Integer.parseInt(chunk[4]) - 1) + "";
+                            Util.saveRemoteChunkInfo(remoteChunkInfo);
                             break;
                         }
                     }

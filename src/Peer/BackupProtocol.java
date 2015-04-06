@@ -29,10 +29,6 @@ public class BackupProtocol {
             fileInfo = Util.loadFileInfo();
             file = new File(chunk ? args[0] + ".part" + args[1] : args[1]);
 
-            if (Util.fileExists(fileInfo, file)) {
-                System.out.println("BackupProtocol - File was already backed up");
-                return;
-            }
             backupSocket = new MulticastSocket(Peer.getMCBport());
             backupSocket.joinGroup(Peer.getMCBip());
             backupSocket.setLoopbackMode(true);
