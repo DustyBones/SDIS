@@ -65,7 +65,6 @@ public class RestoreThread extends Thread {
                     if (!answered) {
                         restoreSocket.send(chunkPacket);
                     }
-
                 }
             } catch (Exception ignore) {
             }

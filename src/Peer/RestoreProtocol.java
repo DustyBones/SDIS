@@ -18,6 +18,7 @@ public class RestoreProtocol {
         FileOutputStream fos;
         BufferedOutputStream bos;
         String fileID;
+        int attempt;
         boolean answered, fail = false;
         long t0, t1;
         byte[] chunkBuf, buf;
@@ -56,22 +57,26 @@ public class RestoreProtocol {
             for (String[] chunk : filter) {
                 buf = buildHeader(chunk).getBytes(StandardCharsets.ISO_8859_1);
                 controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.MCport);
-                controlSocket.send(controlPacket);
-                answered = false;
-                t0 = System.currentTimeMillis();
+                attempt = 0;
                 do {
-                    try {
-                        restoreSocket.receive(peerPacket);
-                        String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
-                        int j = z.indexOf("\r\n\r\n");
-                        z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
-                        System.out.println("RestoreProtocol - Received from " + peerPacket.getAddress() + ": " + z);
-                        if (answered = peerAnswered(peerPacket, chunk))
+                    controlSocket.send(controlPacket);
+                    answered = false;
+                    t0 = System.currentTimeMillis();
+                    do {
+                        try {
+                            restoreSocket.receive(peerPacket);
+                            String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
+                            int j = z.indexOf("\r\n\r\n");
+                            z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
+                            System.out.println("RestoreProtocol - Received from " + peerPacket.getAddress() + ": " + z);
+                            answered = peerAnswered(peerPacket, chunk);
+                        } catch (Exception ignore) {
+                        }
+                        if (answered)
                             break;
-                    } catch (Exception ignore) {
-                    }
-                    t1 = System.currentTimeMillis();
-                } while (t1 - t0 < 30000);
+                        t1 = System.currentTimeMillis();
+                    } while (t1 - t0 < 1000);
+                } while (!answered && attempt <= 5);
                 if (answered) {
                     String s = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
                     int i = s.indexOf("\r\n\r\n");
@@ -81,6 +86,8 @@ public class RestoreProtocol {
                     System.out.println("Unable to restore chunk " + chunk[1] + ". Reverting...");
                     fail = true;
                 }
+                if (fail)
+                    break;
             }
             bos.close();
             fos.close();
