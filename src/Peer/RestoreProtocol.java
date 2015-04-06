@@ -27,7 +27,7 @@ public class RestoreProtocol {
         try {
             chunkInfo = Util.loadChunkInfo();
             fileInfo = Util.loadFileInfo();
-            if (!fileExists(fileInfo, args[1])) {
+            if (!Util.fileExists(fileInfo, args[1])) {
                 System.out.println("This file was not backed up.");
                 return;
             }
@@ -57,7 +57,7 @@ public class RestoreProtocol {
             fail = false;
             for (String[] chunk : filter) {
                 buf = buildHeader(chunk).getBytes(StandardCharsets.ISO_8859_1);
-                controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.MCport);
+                controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.getMCport());
                 answered = false;
                 attempt = 0;
                 do {
@@ -92,7 +92,6 @@ public class RestoreProtocol {
                     break;
             }
             bos.close();
-            fos.close();
             controlSocket.close();
             restoreSocket.close();
             if (fail) {
@@ -116,14 +115,6 @@ public class RestoreProtocol {
         String[] msg = s.split("[ ]+");
 
         return (msg[0].trim().equals("CHUNK") && msg[2].trim().equals(chunk[0]) && msg[3].trim().equals(chunk[1]));
-    }
-
-    static boolean fileExists(ArrayList<String[]> list, String fileName) {
-        for (String[] file : list) {
-            if (file[0].equals(fileName))
-                return true;
-        }
-        return false;
     }
 
 }

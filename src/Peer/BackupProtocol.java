@@ -27,7 +27,7 @@ public class BackupProtocol {
         try {
             chunkInfo = Util.loadChunkInfo();
             fileInfo = Util.loadFileInfo();
-            if (fileExists(fileInfo, args[1])) {
+            if (Util.fileExists(fileInfo, args[1])) {
                 System.out.println("This file or a file with the same name was already backed up.");
                 return;
             }
@@ -121,11 +121,5 @@ public class BackupProtocol {
         return false;
     }
 
-    static boolean fileExists(ArrayList<String[]> list, String fileName) {
-        for (String[] file : list) {
-            if (file[0].equals(fileName))
-                return true;
-        }
-        return false;
-    }
+
 }

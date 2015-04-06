@@ -28,6 +28,14 @@ public class Util {
         return sb.toString();
     }
 
+    public static boolean fileExists(ArrayList<String[]> list, String fileName) {
+        for (String[] file : list) {
+            if (file[0].equals(fileName))
+                return true;
+        }
+        return false;
+    }
+
     public static byte[] concatenateByteArrays(byte[] a, byte[] b) {
         byte[] result = new byte[a.length + b.length];
         System.arraycopy(a, 0, result, 0, a.length);

@@ -6,12 +6,12 @@ import java.util.Scanner;
 
 public class Peer {
     protected static volatile boolean running = true;
-    static InetAddress MCip;
-    static int MCport;
-    static InetAddress MCBip;
-    static int MCBport;
-    static InetAddress MCRip;
-    static int MCRport;
+    private static InetAddress MCip;
+    private static int MCport;
+    private static InetAddress MCBip;
+    private static int MCBport;
+    private static InetAddress MCRip;
+    private static int MCRport;
 
     public static InetAddress getMCip() {
         return MCip;
@@ -38,6 +38,7 @@ public class Peer {
     }
 
     public static void main(String[] args) throws IOException {
+
         if (args.length == 0) {
             MCip = InetAddress.getByName("225.0.0.1");
             MCport = 9001;
@@ -58,9 +59,9 @@ public class Peer {
             return;
         }
 
-        new ControlThread().start();
         new BackupThread().start();
         new RestoreThread().start();
+        new DeleteThread().start();
 
         Scanner sc = new Scanner(System.in);
         while (Peer.running) {

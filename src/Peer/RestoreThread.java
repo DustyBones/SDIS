@@ -65,6 +65,7 @@ public class RestoreThread extends Thread {
                     if (!answered) {
                         restoreSocket.send(chunkPacket);
                     }
+                    fis.close();
                 }
             } catch (Exception ignore) {
             }
