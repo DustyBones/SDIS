@@ -81,7 +81,7 @@ public class RestoreProtocol {
                 } while (!answered && attempt <= 10);
                 if (answered) {
                     String s = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
-                    int i = s.indexOf("\r\n\r\n");
+                    int i = s.indexOf(System.getProperty("line.separator") + System.getProperty("line.separator"));
                     bos.write(Arrays.copyOfRange(peerPacket.getData(), i + 4, peerPacket.getLength()));
                     bos.flush();
                 } else {
@@ -105,7 +105,8 @@ public class RestoreProtocol {
     }
 
     static String buildHeader(String[] cmd) {
-        return "GETCHUNK 1.0 " + cmd[0] + " " + cmd[1] + " \r\n\r\n";
+        return "GETCHUNK 1.0 " + cmd[0] + " " + cmd[1] + " " +
+                System.getProperty("line.separator") + System.getProperty("line.separator");
     }
 
     static boolean peerAnswered(DatagramPacket peerPacket, String[] chunk) {

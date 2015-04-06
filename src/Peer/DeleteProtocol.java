@@ -52,6 +52,7 @@ public class DeleteProtocol {
     }
 
     static String buildHeader(String[] cmd) {
-        return "DELETE 1.0 " + cmd[1] + " \r\n\r\n";
+        return "DELETE 1.0 " + cmd[1] + " " +
+                System.getProperty("line.separator") + System.getProperty("line.separator");
     }
 }

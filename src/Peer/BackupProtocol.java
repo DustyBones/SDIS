@@ -101,8 +101,8 @@ public class BackupProtocol {
     }
 
     static String buildHeader(String fileID, int chunkN, String factor) {
-        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor
-                + " " + System.getProperty("line.separator") + System.getProperty("line.separator");
+        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor + " " +
+                System.getProperty("line.separator") + System.getProperty("line.separator");
         //" \r\n\r\n";
     }
 

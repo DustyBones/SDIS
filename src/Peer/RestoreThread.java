@@ -38,7 +38,7 @@ public class RestoreThread extends Thread {
             while (Peer.running) try {
                 controlSocket.receive(requestPacket);
                 String s = new String(requestPacket.getData(), 0, requestPacket.getLength(), StandardCharsets.ISO_8859_1);
-                int i = s.indexOf("\r\n\r\n");
+                int i = s.indexOf(System.getProperty("line.separator") + System.getProperty("line.separator"));
                 s = new String(requestPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 System.out.println("RestoreThread - Received from " + requestPacket.getAddress() + ": " + s);
                 token = s.split("[ ]+");
@@ -79,7 +79,8 @@ public class RestoreThread extends Thread {
 
 
     String buildHeader(String fileID, int chunkN) {
-        return "CHUNK 1.0 " + fileID + " " + chunkN + " \r\n\r\n";
+        return "CHUNK 1.0 " + fileID + " " + chunkN + " " +
+                System.getProperty("line.separator") + System.getProperty("line.separator");
     }
 
     boolean validRequest(String[] msg) {

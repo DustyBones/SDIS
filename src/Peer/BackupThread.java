@@ -34,7 +34,7 @@ public class BackupThread extends Thread {
                 backupSocket.receive(chunkPacket);
                 received = new String(chunkPacket.getData(), 0, chunkPacket.getLength(), StandardCharsets.ISO_8859_1);
                 header = received.split("[ ]+");
-                int i = received.indexOf("\r\n\r\n");
+                int i = received.indexOf(System.getProperty("line.separator") + System.getProperty("line.separator"));
                 received = new String(chunkPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 body = Arrays.copyOfRange(chunkPacket.getData(), i + 4, chunkPacket.getLength());
                 System.out.println("BackupThread - Received from " + chunkPacket.getAddress() + ": " + received);
@@ -61,6 +61,7 @@ public class BackupThread extends Thread {
     }
 
     String buildHeader(String[] cmd) {
-        return "STORED 1.0 " + cmd[2] + " " + Integer.parseInt(cmd[3]) + " \r\n\r\n";
+        return "STORED 1.0 " + cmd[2] + " " + Integer.parseInt(cmd[3]) +
+                " " + System.getProperty("line.separator") + System.getProperty("line.separator");
     }
 }
