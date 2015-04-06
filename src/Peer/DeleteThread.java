@@ -55,6 +55,7 @@ public class DeleteThread extends Thread {
                             Util.saveLocalChunkInfo(localChunkInfo);
                             if (Integer.parseInt(chunk[4]) < Integer.parseInt(chunk[3]))
                                 BackupProtocol.run(chunk, true);
+                            Util.wait(1000);
                             break;
                         }
                     }

@@ -122,43 +122,6 @@ public class Peer {
         } else {
             tokens[0] = "-1";
         }
-        //*****************testing only************************
-        switch (s) {
-            case "1":
-                tokens = new String[3];
-                tokens[0] = "1";
-                tokens[1] = "test.txt";
-                tokens[2] = "1";
-                break;
-            case "2":
-                tokens = new String[3];
-                tokens[0] = "1";
-                tokens[1] = "test.jpg";
-                tokens[2] = "1";
-                break;
-            case "3":
-                tokens = new String[3];
-                tokens[0] = "1";
-                tokens[1] = "CharacterBuilder.zip";
-                tokens[2] = "1";
-                break;
-            case "4":
-                tokens = new String[2];
-                tokens[0] = "2";
-                tokens[1] = "test.txt";
-                break;
-            case "5":
-                tokens = new String[2];
-                tokens[0] = "2";
-                tokens[1] = "test.jpg";
-                break;
-            case "6":
-                tokens = new String[2];
-                tokens[0] = "2";
-                tokens[1] = "CharacterBuilder.zip";
-                break;
-        }
-        //****************************************************
         return tokens;
     }
 }

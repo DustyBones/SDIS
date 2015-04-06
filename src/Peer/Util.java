@@ -13,18 +13,18 @@ public class Util {
 
     public static String getFileID(String file) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        FileInputStream fis = new FileInputStream(file);
         byte[] buffer = new byte[1024];
         int bytesRead;
+        FileInputStream fis = new FileInputStream(file);
         while ((bytesRead = fis.read(buffer)) != -1) {
             md.update(buffer, 0, bytesRead);
         }
+        fis.close();
         byte[] hash = md.digest();
         StringBuilder sb = new StringBuilder();
         for (byte aHash : hash) {
             sb.append(Integer.toString((aHash & 0xff) + 0x100, 16).substring(1));
         }
-        fis.close();
         return sb.toString();
     }
 
