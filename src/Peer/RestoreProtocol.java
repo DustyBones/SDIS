@@ -105,8 +105,7 @@ public class RestoreProtocol {
     }
 
     static String buildHeader(String[] cmd) {
-        return "GETCHUNK 1.0 " + cmd[0] + " " + cmd[1] + " " +
-                System.getProperty("line.separator") + System.getProperty("line.separator");
+        return "GETCHUNK 1.0 " + cmd[0] + " " + cmd[1] + " \r\n\r\n";
     }
 
     static boolean peerAnswered(DatagramPacket peerPacket, String[] chunk) {

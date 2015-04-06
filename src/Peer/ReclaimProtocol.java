@@ -45,7 +45,7 @@ public class ReclaimProtocol {
             Util.saveLocalChunkInfo(localChunkInfo);
             controlSocket.close();
             System.out.println("ReclaimProtocol - Reclaimed " + savings + "B");
-            System.out.println("ReclaimProtocol - Finished.");
+            System.out.println("ReclaimProtocol - Finished");
         } catch (Exception e) {
             e.printStackTrace();
         }

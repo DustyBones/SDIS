@@ -62,7 +62,7 @@ public class BackupProtocol {
                             controlSocket.receive(ackPacket);
                             String z = new String(ackPacket.getData(), 0, ackPacket.getLength(), StandardCharsets.ISO_8859_1);
                             //int j = z.indexOf("\r\n\r\n");
-                            int j = z.indexOf(System.getProperty("line.separator") + System.getProperty("line.separator"));
+                            int j = z.indexOf("\r\n\r\n");
                             z = new String(ackPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
                             System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + z);
                             if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
@@ -101,9 +101,7 @@ public class BackupProtocol {
     }
 
     static String buildHeader(String fileID, int chunkN, String factor) {
-        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor + " " +
-                System.getProperty("line.separator") + System.getProperty("line.separator");
-        //" \r\n\r\n";
+        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor + " \r\n\r\n";
     }
 
     static boolean validateAcknowledge(DatagramPacket ack, ArrayList<InetAddress> ip, String fileID, int chunk) {
