@@ -92,12 +92,10 @@ public class BackupProtocol {
             fis.close();
             Util.saveChunkInfo(chunkInfo);
             Util.saveFileInfo(fileInfo);
-
+            System.out.println("BackupProtocol - Backup complete.");
         } catch (Exception ignore) {
             //e.printStackTrace();
         }
-
-        System.out.println("Backup complete.");
     }
 
     static String buildHeader(String fileID, int chunkN, String factor) {

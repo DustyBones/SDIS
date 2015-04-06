@@ -85,7 +85,7 @@ public class RestoreProtocol {
                     bos.write(Arrays.copyOfRange(peerPacket.getData(), i + 4, peerPacket.getLength()));
                     bos.flush();
                 } else {
-                    System.out.println("Unable to restore chunk " + chunk[1] + ". Reverting...");
+                    System.out.println("RestoreProtocol - Unable to restore chunk " + chunk[1] + ". Reverting...");
                     fail = true;
                 }
                 if (fail)
@@ -97,7 +97,7 @@ public class RestoreProtocol {
             if (fail) {
                 Files.delete(file.toPath());
             } else {
-                System.out.println("Restoration complete.");
+                System.out.println("RestoreProtocol - Restoration complete.");
             }
         } catch (Exception ignore) {
             //e.printStackTrace();
