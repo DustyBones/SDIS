@@ -42,6 +42,7 @@ public class ReclaimProtocol {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                Util.wait(1000);
             }
             Util.saveLocalChunkInfo(localChunkInfo);
             controlSocket.close();

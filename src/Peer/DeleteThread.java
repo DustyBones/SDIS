@@ -52,8 +52,9 @@ public class DeleteThread extends Thread {
                         if (chunk[0].equals(msg[2]) && chunk[1].equals(msg[3])) {
                             chunk[4] = (Integer.parseInt(chunk[4]) - 1) + "";
                             Util.saveLocalChunkInfo(localChunkInfo);
-                            if (Integer.parseInt(chunk[4]) < Integer.parseInt(chunk[3]))
+                            if (Integer.parseInt(chunk[4]) < Integer.parseInt(chunk[3])) {
                                 BackupProtocol.run(chunk, true);
+                            }
                             break;
                         }
                     }
