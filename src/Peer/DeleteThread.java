@@ -40,6 +40,16 @@ public class DeleteThread extends Thread {
                             file.delete();
                         }
                     }
+                } else if (msg[0].equals("REMOVED")) {
+                    System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
+                    File[] files = new File(System.getProperty("user.dir")).listFiles();
+                    for (File file : files) {
+                        String[] fileToken = file.getName().split("[.]");
+                        if (fileToken[0].equals(msg[2])) {
+                            System.out.println("DeleteThread - " + file.getName() + " erased.");
+                            file.delete();
+                        }
+                    }
                 }
             } catch (Exception ignore) {
             }

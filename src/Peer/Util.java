@@ -28,9 +28,9 @@ public class Util {
         return sb.toString();
     }
 
-    public static boolean fileExists(ArrayList<String[]> list, String fileName) {
-        for (String[] file : list) {
-            if (file[0].equals(fileName))
+    public static boolean fileExists(ArrayList<String[]> list, File file) {
+        for (String[] f : list) {
+            if (f[0].equals(file.getName()))
                 return true;
         }
         return false;
@@ -56,11 +56,11 @@ public class Util {
         return r.nextInt(range);
     }
 
-    public static ArrayList<String[]> loadChunkInfo() throws Exception {
+    public static ArrayList<String[]> loadRemoteChunkInfo() throws Exception {
         String chunk;
         String[] token;
         ArrayList<String[]> list = new ArrayList<>();
-        File fin = new File("chunkInfo.csv");
+        File fin = new File("remoteChunkInfo.csv");
         if (fin.isFile()) {
             FileInputStream fis = new FileInputStream(fin);
             BufferedReader br = new BufferedReader(new InputStreamReader(fis));
@@ -73,19 +73,49 @@ public class Util {
         return list;
     }
 
-    public static void saveChunkInfo(ArrayList<String[]> list) throws Exception {
-        File fout = new File("chunkInfo.csv");
+    public static void saveRemoteChunkInfo(ArrayList<String[]> list) throws Exception {
+        File fout = new File("remoteChunkInfo.csv");
         if (!fout.isFile()) {
             fout.createNewFile();
         }
         FileOutputStream fos = new FileOutputStream(fout);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
         for (String[] chunk : list) {
-            bw.write(chunk[0] + "," + chunk[1] + "," + chunk[2] + "," + chunk[3]);
+            bw.write(chunk[0] + "," + chunk[1] + "," + chunk[2] + "," + chunk[3] + "," + chunk[4]);
             bw.newLine();
         }
         bw.close();
+    }
 
+    public static ArrayList<String[]> loadLocalChunkInfo() throws Exception {
+        String chunk;
+        String[] token;
+        ArrayList<String[]> list = new ArrayList<>();
+        File fin = new File("localChunkInfo.csv");
+        if (fin.isFile()) {
+            FileInputStream fis = new FileInputStream(fin);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            while ((chunk = br.readLine()) != null) {
+                token = chunk.split("[,]");
+                list.add(token);
+            }
+            br.close();
+        }
+        return list;
+    }
+
+    public static void saveLocalChunkInfo(ArrayList<String[]> list) throws Exception {
+        File fout = new File("localChunkInfo.csv");
+        if (!fout.isFile()) {
+            fout.createNewFile();
+        }
+        FileOutputStream fos = new FileOutputStream(fout);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+        for (String[] chunk : list) {
+            bw.write(chunk[0] + "," + chunk[1] + "," + chunk[2] + "," + chunk[3] + "," + chunk[4]);
+            bw.newLine();
+        }
+        bw.close();
     }
 
     public static ArrayList<String[]> loadFileInfo() throws Exception {

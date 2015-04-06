@@ -25,10 +25,11 @@ public class BackupProtocol {
         ArrayList<String[]> chunkInfo, fileInfo;
 
         try {
-            chunkInfo = Util.loadChunkInfo();
+            chunkInfo = Util.loadRemoteChunkInfo();
             fileInfo = Util.loadFileInfo();
-            if (Util.fileExists(fileInfo, args[1])) {
-                System.out.println("This file or a file with the same name was already backed up.");
+            file = new File(args[1]);
+            if (Util.fileExists(fileInfo, file)) {
+                System.out.println("BackupProtocol - File was already backed up");
                 return;
             }
             backupSocket = new MulticastSocket(Peer.getMCBport());
@@ -37,7 +38,6 @@ public class BackupProtocol {
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
             controlSocket.setLoopbackMode(true);
-            file = new File(args[1]);
             fis = new FileInputStream(file);
             fileID = Util.getFileID(args[1]);
             chunkN = 0;
@@ -61,7 +61,8 @@ public class BackupProtocol {
                         try {
                             controlSocket.receive(ackPacket);
                             String z = new String(ackPacket.getData(), 0, ackPacket.getLength(), StandardCharsets.ISO_8859_1);
-                            int j = z.indexOf("\r\n\r\n");
+                            //int j = z.indexOf("\r\n\r\n");
+                            int j = z.indexOf(System.getProperty("line.separator") + System.getProperty("line.separator"));
                             z = new String(ackPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
                             System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + z);
                             if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
@@ -73,16 +74,17 @@ public class BackupProtocol {
                     } while ((t1 - t0) < (500 * Math.pow(2, attempt - 1)));
                     attempt++;
                 } while (saved < Integer.parseInt(args[2]) && attempt <= 5);
-                temp = new String[4];
+                temp = new String[5];
                 temp[0] = fileID;
                 temp[1] = chunkN + "";
-                temp[2] = args[2];
-                temp[3] = saved + "";
+                temp[2] = k + "";
+                temp[3] = args[2];
+                temp[4] = saved + "";
                 chunkInfo.add(temp);
                 chunkN++;
             }
             temp = new String[2];
-            temp[0] = args[1];
+            temp[0] = file.getName();
             temp[1] = fileID;
             fileInfo.add(temp);
             backupSocket.leaveGroup(Peer.getMCBip());
@@ -90,16 +92,18 @@ public class BackupProtocol {
             controlSocket.leaveGroup(Peer.getMCip());
             controlSocket.close();
             fis.close();
-            Util.saveChunkInfo(chunkInfo);
+            Util.saveRemoteChunkInfo(chunkInfo);
             Util.saveFileInfo(fileInfo);
-            System.out.println("BackupProtocol - Backup complete.");
+            System.out.println("BackupProtocol - Finished.");
         } catch (Exception ignore) {
             //e.printStackTrace();
         }
     }
 
     static String buildHeader(String fileID, int chunkN, String factor) {
-        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor + " \r\n\r\n";
+        return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor
+                + " " + System.getProperty("line.separator") + System.getProperty("line.separator");
+        //" \r\n\r\n";
     }
 
     static boolean validateAcknowledge(DatagramPacket ack, ArrayList<InetAddress> ip, String fileID, int chunk) {

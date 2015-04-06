@@ -68,23 +68,26 @@ public class Peer {
             try {
                 String input = sc.nextLine();
                 String[] cmd = validateCmd(input);
-                switch (cmd[0]) {
-                    case "-1":
+                switch (Integer.parseInt(cmd[0])) {
+                    case -1:
                         System.out.println("Invalid command or filename, type 'help' for a list of options");
                         break;
-                    case "0":
+                    case 0:
                         Peer.running = false;
                         break;
-                    case "1":
+                    case 1:
                         BackupProtocol.run(cmd);
                         break;
-                    case "2":
+                    case 2:
                         RestoreProtocol.run(cmd);
                         break;
-                    case "3":
+                    case 3:
                         DeleteProtocol.run(cmd);
                         break;
-                    case "4":
+                    case 4:
+                        ReclaimProtocol.run();
+                        break;
+                    case 5:
                         System.out.println("Possible operations:\n" +
                                 "\tbackup <filename> <replication factor>\n" +
                                 "\trestore <filename>\n" +
@@ -112,8 +115,10 @@ public class Peer {
             tokens[0] = "2";
         } else if (tokens[0].equals("delete") && tokens.length == 2) {
             tokens[0] = "3";
-        } else if (tokens[0].equals("help") && tokens.length == 1) {
+        } else if (tokens[0].equals("reclaim") && tokens.length == 1) {
             tokens[0] = "4";
+        } else if (tokens[0].equals("help") && tokens.length == 1) {
+            tokens[0] = "5";
         } else {
             tokens[0] = "-1";
         }

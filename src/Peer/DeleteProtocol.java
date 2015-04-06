@@ -1,5 +1,6 @@
 package Peer;
 
+import java.io.File;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
@@ -9,25 +10,27 @@ public class DeleteProtocol {
     public static void run(String[] args) {
         MulticastSocket controlSocket;
         DatagramPacket controlPacket;
-        String[] file;
+        File file;
+        String[] fileFilter;
         int sent;
         byte[] buf;
         ArrayList<String[]> fileInfo, chunkInfo, filter;
 
         try {
-            chunkInfo = Util.loadChunkInfo();
+            chunkInfo = Util.loadRemoteChunkInfo();
             fileInfo = Util.loadFileInfo();
-            if (!Util.fileExists(fileInfo, args[1])) {
-                System.out.println("This file was not backed up.");
+            file = new File(args[1]);
+            if (!Util.fileExists(fileInfo, file)) {
+                System.out.println("DeleteProtocol - File was not backed up");
                 return;
             }
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
             controlSocket.setLoopbackMode(true);
             controlSocket.setSoTimeout(100);
-            file = Util.filterFiles(fileInfo, args[1]);
-            filter = Util.filterChunks(chunkInfo, file[1]);
-            buf = buildHeader(file).getBytes(StandardCharsets.ISO_8859_1);
+            fileFilter = Util.filterFiles(fileInfo, file.getName());
+            filter = Util.filterChunks(chunkInfo, fileFilter[1]);
+            buf = buildHeader(fileFilter).getBytes(StandardCharsets.ISO_8859_1);
             controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.getMCport());
             sent = 0;
             while (sent < 5) {
@@ -38,11 +41,11 @@ public class DeleteProtocol {
             for (String[] chunk : filter) {
                 chunkInfo.remove(chunk);
             }
-            fileInfo.remove(file);
+            fileInfo.remove(fileFilter);
             Util.saveFileInfo(fileInfo);
-            Util.saveChunkInfo(chunkInfo);
+            Util.saveRemoteChunkInfo(chunkInfo);
             controlSocket.close();
-            System.out.println("Deletion complete.");
+            System.out.println("DeleteProtocol - Finished");
         } catch (Exception e) {
             e.printStackTrace();
         }

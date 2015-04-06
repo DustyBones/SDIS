@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class BackupThread extends Thread {
     @Override
     public void run() {
-        MulticastSocket backupSocket;
+        MulticastSocket backupSocket, controlSocket;
         DatagramPacket chunkPacket, ackPacket;
         byte[] buf, ack, body;
         String received;
@@ -20,10 +20,14 @@ public class BackupThread extends Thread {
         FileOutputStream fos;
         BufferedOutputStream bos;
         try {
+            controlSocket = new MulticastSocket(Peer.getMCport());
+            controlSocket.joinGroup(Peer.getMCip());
+            controlSocket.setLoopbackMode(true);
+            controlSocket.setSoTimeout(100);
             backupSocket = new MulticastSocket(Peer.getMCBport());
             backupSocket.joinGroup(Peer.getMCBip());
             backupSocket.setLoopbackMode(true);
-            backupSocket.setSoTimeout(1000);
+            backupSocket.setSoTimeout(100);
             buf = new byte[64100];
             chunkPacket = new DatagramPacket(buf, buf.length);
             while (Peer.running) try {

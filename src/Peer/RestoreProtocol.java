@@ -25,15 +25,15 @@ public class RestoreProtocol {
         ArrayList<String[]> chunkInfo, fileInfo, filter;
 
         try {
-            chunkInfo = Util.loadChunkInfo();
+            chunkInfo = Util.loadRemoteChunkInfo();
             fileInfo = Util.loadFileInfo();
-            if (!Util.fileExists(fileInfo, args[1])) {
-                System.out.println("This file was not backed up.");
+            file = new File(args[1]);
+            if (!Util.fileExists(fileInfo, file)) {
+                System.out.println("RestoreProtocol - File was not backed up");
                 return;
             }
-            file = new File(args[1]);
             if (file.isFile()) {
-                System.out.println("This file already exists.");
+                System.out.println("RestoreProtocol - File already exists");
                 return;
             } else {
                 file.createNewFile();
@@ -51,7 +51,7 @@ public class RestoreProtocol {
             controlSocket.setLoopbackMode(true);
             controlSocket.setSoTimeout(100);
             chunkBuf = new byte[64100];
-            fileID = Util.filterFiles(fileInfo, args[1])[1];
+            fileID = Util.filterFiles(fileInfo, file.getName())[1];
             filter = Util.filterChunks(chunkInfo, fileID);
             peerPacket = new DatagramPacket(chunkBuf, chunkBuf.length);
             fail = false;
@@ -97,7 +97,7 @@ public class RestoreProtocol {
             if (fail) {
                 Files.delete(file.toPath());
             } else {
-                System.out.println("RestoreProtocol - Restoration complete.");
+                System.out.println("RestoreProtocol - Finished");
             }
         } catch (Exception ignore) {
             //e.printStackTrace();
