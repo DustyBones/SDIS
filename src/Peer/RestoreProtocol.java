@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class RestoreProtocol {
     public static void run(String[] args) {
-        MulticastSocket restoreSocket, controlSocket;
+        MulticastSocket restoreSocket, multicastSocket;
         DatagramPacket controlPacket, peerPacket;
         File file;
         FileOutputStream fos;
@@ -46,10 +46,10 @@ public class RestoreProtocol {
             restoreSocket.joinGroup(Peer.getMCRip());
             restoreSocket.setLoopbackMode(true);
             restoreSocket.setSoTimeout(100);
-            controlSocket = new MulticastSocket(Peer.getMCport());
-            controlSocket.joinGroup(Peer.getMCip());
-            controlSocket.setLoopbackMode(true);
-            controlSocket.setSoTimeout(100);
+            multicastSocket = new MulticastSocket();
+            multicastSocket.joinGroup(Peer.getMCip());
+            multicastSocket.setLoopbackMode(true);
+            multicastSocket.setSoTimeout(100);
             chunkBuf = new byte[64100];
             fileID = Util.filterFiles(fileInfo, file.getName())[1];
             filter = Util.filterChunks(remoteChunkInfo, fileID);
@@ -61,7 +61,7 @@ public class RestoreProtocol {
                 answered = false;
                 attempt = 0;
                 do {
-                    controlSocket.send(controlPacket);
+                    multicastSocket.send(controlPacket);
                     t0 = System.currentTimeMillis();
                     do {
                         try {
@@ -69,7 +69,8 @@ public class RestoreProtocol {
                             String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
-                            System.out.println("RestoreProtocol - Received from " + peerPacket.getAddress() + ": " + z);
+                            System.out.println("RestoreProtocol - Received from " + peerPacket.getAddress() + ":" +
+                                    peerPacket.getPort() + " :" + peerPacket.getPort() + " : " + z);
                             answered = peerAnswered(peerPacket, chunk);
                         } catch (Exception ignore) {
                         }
@@ -81,7 +82,7 @@ public class RestoreProtocol {
                 } while (!answered && attempt <= 10);
                 if (answered) {
                     String s = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
-                    int i = s.indexOf(System.getProperty("line.separator") + System.getProperty("line.separator"));
+                    int i = s.indexOf("\r\n\r\n");
                     bos.write(Arrays.copyOfRange(peerPacket.getData(), i + 4, peerPacket.getLength()));
                     bos.flush();
                 } else {
@@ -92,7 +93,7 @@ public class RestoreProtocol {
                     break;
             }
             bos.close();
-            controlSocket.close();
+            multicastSocket.close();
             restoreSocket.close();
             if (fail) {
                 Files.delete(file.toPath());

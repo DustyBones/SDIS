@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class DeleteProtocol {
     public static void run(String[] args) {
-        MulticastSocket controlSocket;
+        MulticastSocket multicastSocket;
         DatagramPacket controlPacket;
         File file;
         String[] fileFilter;
@@ -24,17 +24,17 @@ public class DeleteProtocol {
                 System.out.println("DeleteProtocol - File was not backed up");
                 return;
             }
-            controlSocket = new MulticastSocket(Peer.getMCport());
-            controlSocket.joinGroup(Peer.getMCip());
-            controlSocket.setLoopbackMode(true);
-            controlSocket.setSoTimeout(100);
+            multicastSocket = new MulticastSocket();
+            multicastSocket.joinGroup(Peer.getMCip());
+            multicastSocket.setLoopbackMode(true);
+            multicastSocket.setSoTimeout(100);
             fileFilter = Util.filterFiles(fileInfo, file.getName());
             filter = Util.filterChunks(chunkInfo, fileFilter[1]);
             buf = buildHeader(fileFilter).getBytes(StandardCharsets.ISO_8859_1);
             controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.getMCport());
             sent = 0;
             while (sent < 5) {
-                controlSocket.send(controlPacket);
+                multicastSocket.send(controlPacket);
                 sent++;
                 Util.wait(1000);
             }
@@ -44,7 +44,7 @@ public class DeleteProtocol {
             fileInfo.remove(fileFilter);
             Util.saveFileInfo(fileInfo);
             Util.saveRemoteChunkInfo(chunkInfo);
-            controlSocket.close();
+            multicastSocket.close();
             System.out.println("DeleteProtocol - Finished");
         } catch (Exception e) {
             e.printStackTrace();

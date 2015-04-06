@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class RestoreThread extends Thread {
     @Override
     public void run() {
-        MulticastSocket restoreSocket, controlSocket;
+        MulticastSocket multicastSocket, controlSocket;
         DatagramPacket chunkPacket, requestPacket, peerPacket;
         File file;
         FileInputStream fis;
@@ -21,10 +21,10 @@ public class RestoreThread extends Thread {
         boolean answered;
 
         try {
-            restoreSocket = new MulticastSocket(Peer.getMCRport());
-            restoreSocket.joinGroup(Peer.getMCRip());
-            restoreSocket.setLoopbackMode(true);
-            restoreSocket.setSoTimeout(100);
+            multicastSocket = new MulticastSocket();
+            multicastSocket.joinGroup(Peer.getMCRip());
+            multicastSocket.setLoopbackMode(true);
+            multicastSocket.setSoTimeout(100);
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
             controlSocket.setLoopbackMode(true);
@@ -42,7 +42,8 @@ public class RestoreThread extends Thread {
                 s = new String(requestPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 token = s.split("[ ]+");
                 if (validRequest(token)) {
-                    System.out.println("RestoreThread - Received from " + requestPacket.getAddress() + ": " + s);
+                    System.out.println("RestoreThread - Received from " + requestPacket.getAddress() + ":" +
+                            requestPacket.getPort() + " : " + s);
                     answered = false;
                     time = Util.getRandomInt(400);
                     t0 = System.currentTimeMillis();
@@ -53,11 +54,12 @@ public class RestoreThread extends Thread {
                     chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCRip(), Peer.getMCRport());
                     do {
                         try {
-                            restoreSocket.receive(peerPacket);
+                            multicastSocket.receive(peerPacket);
                             String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
-                            System.out.println("RestoreThread - Received from " + peerPacket.getAddress() + ": " + z);
+                            System.out.println("RestoreThread - Received from " + peerPacket.getAddress() + ":"
+                                    + peerPacket.getPort() + " : " + z);
                             answered = peerAnswered(peerPacket, token);
                         } catch (Exception ignore) {
                         }
@@ -66,7 +68,7 @@ public class RestoreThread extends Thread {
                         t1 = System.currentTimeMillis();
                     } while (t1 - t0 < time);
                     if (!answered) {
-                        restoreSocket.send(chunkPacket);
+                        multicastSocket.send(chunkPacket);
                     }
                     fis.close();
                 }

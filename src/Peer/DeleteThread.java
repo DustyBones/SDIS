@@ -31,7 +31,8 @@ public class DeleteThread extends Thread {
                 received = new String(dataPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 msg = received.split("[ ]+");
                 if (msg[0].equals("DELETE")) {
-                    System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
+                    System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ":" +
+                            dataPacket.getPort() + " : " + received);
                     localChunkInfo = Util.loadLocalChunkInfo();
                     filter = new ArrayList<>();
                     for (String[] chunk : localChunkInfo) {
@@ -45,7 +46,8 @@ public class DeleteThread extends Thread {
                     }
                     Util.saveLocalChunkInfo(localChunkInfo);
                 } else if (msg[0].equals("REMOVED")) {
-                    System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
+                    System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ":" +
+                            dataPacket.getPort() + " : " + received);
                     localChunkInfo = Util.loadLocalChunkInfo();
                     remoteChunkInfo = Util.loadRemoteChunkInfo();
                     for (String[] chunk : localChunkInfo) {

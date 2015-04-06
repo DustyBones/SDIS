@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class ReclaimProtocol {
     public static void run() {
-        MulticastSocket controlSocket;
+        MulticastSocket multicastSocket;
         DatagramPacket controlPacket;
         File file;
         byte[] buf;
@@ -16,10 +16,10 @@ public class ReclaimProtocol {
         ArrayList<String[]> localChunkInfo, filter;
 
         try {
-            controlSocket = new MulticastSocket(Peer.getMCport());
-            controlSocket.joinGroup(Peer.getMCip());
-            controlSocket.setLoopbackMode(true);
-            controlSocket.setSoTimeout(100);
+            multicastSocket = new MulticastSocket();
+            multicastSocket.joinGroup(Peer.getMCip());
+            multicastSocket.setLoopbackMode(true);
+            multicastSocket.setSoTimeout(100);
             localChunkInfo = Util.loadLocalChunkInfo();
             filter = new ArrayList<>();
             savings = 0;
@@ -33,7 +33,7 @@ public class ReclaimProtocol {
                 try {
                     buf = buildHeader(chunk).getBytes(StandardCharsets.ISO_8859_1);
                     controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.getMCport());
-                    controlSocket.send(controlPacket);
+                    multicastSocket.send(controlPacket);
                     localChunkInfo.remove(chunk);
                     file = new File(chunk[0] + ".part" + chunk[1]);
                     System.out.println(file.getName());
@@ -45,7 +45,7 @@ public class ReclaimProtocol {
                 Util.wait(1000);
             }
             Util.saveLocalChunkInfo(localChunkInfo);
-            controlSocket.close();
+            multicastSocket.close();
             System.out.println("ReclaimProtocol - Reclaimed " + savings + "B");
             System.out.println("ReclaimProtocol - Finished");
         } catch (Exception e) {

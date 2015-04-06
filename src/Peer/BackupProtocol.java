@@ -3,7 +3,6 @@ package Peer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +11,7 @@ import java.util.Arrays;
 
 public class BackupProtocol {
     public static void run(String[] args, boolean chunk) {
-        MulticastSocket backupSocket, controlSocket;
+        MulticastSocket multicastSocket, controlSocket;
         DatagramPacket chunkPacket, ackPacket;
         File file;
         FileInputStream fis;
@@ -21,7 +20,7 @@ public class BackupProtocol {
         long t0, t1;
         byte[] chunkBuf, buf, msg;
         String[] temp;
-        ArrayList<InetAddress> IPlist;
+        ArrayList<String> IPlist;
         ArrayList<String[]> chunkInfo, fileInfo;
 
         try {
@@ -29,9 +28,9 @@ public class BackupProtocol {
             fileInfo = Util.loadFileInfo();
             file = new File(chunk ? args[0] + ".part" + args[1] : args[1]);
 
-            backupSocket = new MulticastSocket(Peer.getMCBport());
-            backupSocket.joinGroup(Peer.getMCBip());
-            backupSocket.setLoopbackMode(true);
+            multicastSocket = new MulticastSocket();
+            multicastSocket.joinGroup(Peer.getMCBip());
+            multicastSocket.setLoopbackMode(true);
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
             controlSocket.setLoopbackMode(true);
@@ -43,7 +42,9 @@ public class BackupProtocol {
             IPlist = new ArrayList<>();
             int k;
             while ((k = fis.read(chunkBuf)) > -1) {
-                msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN, (chunk ? args[3] : args[2])).getBytes(StandardCharsets.ISO_8859_1), Arrays.copyOfRange(chunkBuf, 0, k));
+                msg = Util.concatenateByteArrays(buildHeader(fileID, chunkN,
+                                (chunk ? args[3] : args[2])).getBytes(StandardCharsets.ISO_8859_1),
+                        Arrays.copyOfRange(chunkBuf, 0, k));
                 chunkPacket = new DatagramPacket(msg, msg.length, Peer.getMCBip(), Peer.getMCBport());
                 ackPacket = new DatagramPacket(buf, buf.length);
                 attempt = 1;
@@ -52,7 +53,7 @@ public class BackupProtocol {
                 do {
                     timeout = (int) (500 * Math.pow(2, attempt - 1) / Integer.parseInt(args[2]));
                     controlSocket.setSoTimeout(timeout);
-                    backupSocket.send(chunkPacket);
+                    multicastSocket.send(chunkPacket);
                     t0 = System.currentTimeMillis();
                     do {
                         try {
@@ -60,7 +61,8 @@ public class BackupProtocol {
                             String z = new String(ackPacket.getData(), 0, ackPacket.getLength(), StandardCharsets.ISO_8859_1);
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(ackPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
-                            System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + z);
+                            System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ":" +
+                                    ackPacket.getPort() + " : " + z);
                             if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
                                 saved++;
                             }
@@ -92,8 +94,8 @@ public class BackupProtocol {
             temp[1] = fileID;
 
             fileInfo.add(temp);
-            backupSocket.leaveGroup(Peer.getMCBip());
-            backupSocket.close();
+            multicastSocket.leaveGroup(Peer.getMCBip());
+            multicastSocket.close();
             controlSocket.leaveGroup(Peer.getMCip());
             controlSocket.close();
             fis.close();
@@ -103,7 +105,7 @@ public class BackupProtocol {
                 Util.saveRemoteChunkInfo(chunkInfo);
                 Util.saveFileInfo(fileInfo);
             }
-            System.out.println("BackupProtocol - Finished.");
+            System.out.println("BackupProtocol - Finished");
         } catch (Exception ignore) {
             //e.printStackTrace();
         }
@@ -113,19 +115,19 @@ public class BackupProtocol {
         return "PUTCHUNK 1.0 " + fileID + " " + chunkN + " " + factor + " \r\n\r\n";
     }
 
-    static boolean validateAcknowledge(DatagramPacket ack, ArrayList<InetAddress> ip, String fileID, int chunk) {
+    static boolean validateAcknowledge(DatagramPacket ack, ArrayList<String> ip, String fileID, int chunk) {
         boolean exists = false;
         String s = new String(ack.getData(), 0, ack.getLength(), StandardCharsets.ISO_8859_1);
         String[] msg = s.split("[ ]+");
 
         if (msg[0].trim().equals("STORED") && msg[2].trim().equals(fileID) && Integer.parseInt(msg[3]) == chunk) {
-            for (InetAddress aIp : ip) {
-                if (aIp.equals(ack.getAddress())) {
+            for (String aIp : ip) {
+                if (aIp.equals(ack.getAddress().toString() + ":" + ack.getPort())) {
                     exists = true;
                 }
             }
             if (!exists) {
-                ip.add(ack.getAddress());
+                ip.add(ack.getAddress().toString() + ":" + ack.getPort());
                 return true;
             } else {
                 return false;

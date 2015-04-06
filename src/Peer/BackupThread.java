@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import java.util.Arrays;
 public class BackupThread extends Thread {
     @Override
     public void run() {
-        MulticastSocket backupSocket, controlSocket;
+        MulticastSocket backupSocket, multicastSocket;
         DatagramPacket chunkPacket, ackPacket, peerAckPacket;
         byte[] buf, ack, peerAck, body;
         String received;
@@ -24,12 +23,12 @@ public class BackupThread extends Thread {
         int saved, timeout;
         long t0, t1;
         ArrayList<String[]> localChunkInfo;
-        ArrayList<InetAddress> ip;
+        ArrayList<String> ip;
         try {
-            controlSocket = new MulticastSocket(Peer.getMCport());
-            controlSocket.joinGroup(Peer.getMCip());
-            controlSocket.setLoopbackMode(true);
-            controlSocket.setSoTimeout(100);
+            multicastSocket = new MulticastSocket();
+            multicastSocket.joinGroup(Peer.getMCip());
+            multicastSocket.setLoopbackMode(true);
+            multicastSocket.setSoTimeout(100);
             backupSocket = new MulticastSocket(Peer.getMCBport());
             backupSocket.joinGroup(Peer.getMCBip());
             backupSocket.setLoopbackMode(true);
@@ -43,7 +42,8 @@ public class BackupThread extends Thread {
                 int i = received.indexOf("\r\n\r\n");
                 received = new String(chunkPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 body = Arrays.copyOfRange(chunkPacket.getData(), i + 4, chunkPacket.getLength());
-                System.out.println("BackupThread - Received from " + chunkPacket.getAddress() + ": " + received);
+                System.out.println("BackupThread - Received from " + chunkPacket.getAddress().toString() + ":" +
+                        chunkPacket.getPort() + " : " + received);
                 if (header[0].equals("PUTCHUNK")) {
                     ip = new ArrayList<>();
                     saved = 1;
@@ -72,15 +72,15 @@ public class BackupThread extends Thread {
                     do {
                         boolean exists = false;
                         try {
-                            controlSocket.receive(peerAckPacket);
+                            multicastSocket.receive(peerAckPacket);
                             if (peerAckPacket.getData().equals(ackPacket.getData())) {
-                                for (InetAddress aIp : ip) {
-                                    if (aIp.equals(peerAckPacket.getAddress())) {
+                                for (String aIp : ip) {
+                                    if (aIp.equals(peerAckPacket.getAddress().toString() + ":" + peerAckPacket.getPort())) {
                                         exists = true;
                                     }
                                 }
                                 if (!exists) {
-                                    ip.add(peerAckPacket.getAddress());
+                                    ip.add(peerAckPacket.getAddress().toString() + ":" + peerAckPacket.getPort());
                                     saved++;
                                 }
                             }
@@ -88,7 +88,7 @@ public class BackupThread extends Thread {
                         }
                         t1 = System.currentTimeMillis();
                         if (t1 - t0 < timeout)
-                            controlSocket.send(ackPacket);
+                            multicastSocket.send(ackPacket);
                     } while (t1 - t0 < 500);
                     for (String[] chunk : localChunkInfo) {
                         if (chunk[0].equals(header[2]) && chunk[1].equals(header[3]))
