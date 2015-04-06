@@ -4,21 +4,27 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BackupThread extends Thread {
     @Override
     public void run() {
         MulticastSocket backupSocket, controlSocket;
-        DatagramPacket chunkPacket, ackPacket;
-        byte[] buf, ack, body;
+        DatagramPacket chunkPacket, ackPacket, peerAckPacket;
+        byte[] buf, ack, peerAck, body;
         String received;
         String[] header;
         File file;
         FileOutputStream fos;
         BufferedOutputStream bos;
+        int saved, timeout;
+        long t0, t1;
+        ArrayList<String[]> localChunkInfo;
+        ArrayList<InetAddress> ip;
         try {
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
@@ -39,6 +45,9 @@ public class BackupThread extends Thread {
                 body = Arrays.copyOfRange(chunkPacket.getData(), i + 4, chunkPacket.getLength());
                 System.out.println("BackupThread - Received from " + chunkPacket.getAddress() + ": " + received);
                 if (header[0].equals("PUTCHUNK")) {
+                    ip = new ArrayList<>();
+                    saved = 1;
+                    localChunkInfo = Util.loadLocalChunkInfo();
                     if (!(file = new File(header[2] + ".part" + header[3])).isFile()) {
                         file.createNewFile();
                         fos = new FileOutputStream(file);
@@ -46,11 +55,46 @@ public class BackupThread extends Thread {
                         bos.write(body);
                         bos.flush();
                         bos.close();
+                        String[] newChunk = new String[5];
+                        newChunk[0] = header[2];
+                        newChunk[1] = header[3];
+                        newChunk[2] = body.length + "";
+                        newChunk[3] = header[4];
+                        newChunk[4] = "";
+                        localChunkInfo.add(newChunk);
                     }
+                    timeout = Util.getRandomInt(400);
                     ack = buildHeader(header).getBytes(StandardCharsets.ISO_8859_1);
                     ackPacket = new DatagramPacket(ack, ack.length, Peer.getMCip(), Peer.getMCport());
-                    Util.wait(Util.getRandomInt(400));
-                    backupSocket.send(ackPacket);
+                    peerAck = new byte[256];
+                    peerAckPacket = new DatagramPacket(peerAck, peerAck.length);
+                    t0 = System.currentTimeMillis();
+                    do {
+                        boolean exists = false;
+                        try {
+                            controlSocket.receive(peerAckPacket);
+                            if (peerAckPacket.getData().equals(ackPacket.getData())) {
+                                for (InetAddress aIp : ip) {
+                                    if (aIp.equals(peerAckPacket.getAddress())) {
+                                        exists = true;
+                                    }
+                                }
+                                if (!exists) {
+                                    ip.add(peerAckPacket.getAddress());
+                                    saved++;
+                                }
+                            }
+                        } catch (Exception ignore) {
+                        }
+                        t1 = System.currentTimeMillis();
+                        if (t1 - t0 < timeout)
+                            controlSocket.send(ackPacket);
+                    } while (t1 - t0 < 500);
+                    for (String[] chunk : localChunkInfo) {
+                        if (chunk[0].equals(header[2]) && chunk[1].equals(header[3]))
+                            chunk[4] = saved + "";
+                    }
+                    Util.saveLocalChunkInfo(localChunkInfo);
                 }
             } catch (Exception ignore) {
             }

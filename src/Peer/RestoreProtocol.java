@@ -22,10 +22,10 @@ public class RestoreProtocol {
         boolean answered, fail;
         long t0, t1;
         byte[] chunkBuf, buf;
-        ArrayList<String[]> chunkInfo, fileInfo, filter;
+        ArrayList<String[]> remoteChunkInfo, fileInfo, filter;
 
         try {
-            chunkInfo = Util.loadRemoteChunkInfo();
+            remoteChunkInfo = Util.loadRemoteChunkInfo();
             fileInfo = Util.loadFileInfo();
             file = new File(args[1]);
             if (!Util.fileExists(fileInfo, file)) {
@@ -52,7 +52,7 @@ public class RestoreProtocol {
             controlSocket.setSoTimeout(100);
             chunkBuf = new byte[64100];
             fileID = Util.filterFiles(fileInfo, file.getName())[1];
-            filter = Util.filterChunks(chunkInfo, fileID);
+            filter = Util.filterChunks(remoteChunkInfo, fileID);
             peerPacket = new DatagramPacket(chunkBuf, chunkBuf.length);
             fail = false;
             for (String[] chunk : filter) {

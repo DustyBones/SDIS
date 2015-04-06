@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class DeleteThread extends Thread {
 
@@ -16,6 +17,7 @@ public class DeleteThread extends Thread {
         String received;
         String[] msg;
         int i;
+        ArrayList<String[]> localChunkInfo, filter;
         try {
             controlSocket = new MulticastSocket(Peer.getMCport());
             controlSocket.joinGroup(Peer.getMCip());
@@ -32,16 +34,21 @@ public class DeleteThread extends Thread {
                 msg = received.split("[ ]+");
                 if (msg[0].equals("DELETE")) {
                     System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
-                    File[] files = new File(System.getProperty("user.dir")).listFiles();
-                    for (File file : files) {
-                        String[] fileToken = file.getName().split("[.]");
-                        if (fileToken[0].equals(msg[2])) {
-                            System.out.println("DeleteThread - " + file.getName() + " erased.");
-                            file.delete();
-                        }
+                    localChunkInfo = Util.loadLocalChunkInfo();
+                    filter = new ArrayList<>();
+                    for (String[] chunk : localChunkInfo) {
+                        if (chunk[0].equals(msg[2]))
+                            filter.add(chunk);
                     }
+                    for (String[] chunk : filter) {
+                        System.out.println("DeleteThread - " + chunk[0] + ".part" + chunk[1] + " erased.");
+                        new File(chunk[0] + ".part" + chunk[1]).delete();
+                        localChunkInfo.remove(chunk);
+                    }
+                    Util.saveLocalChunkInfo(localChunkInfo);
                 } else if (msg[0].equals("REMOVED")) {
                     System.out.println("DeleteThread - Received from " + dataPacket.getAddress() + ": " + received);
+                    //TODO
                 }
             } catch (Exception ignore) {
             }
