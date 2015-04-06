@@ -19,7 +19,7 @@ public class RestoreProtocol {
         BufferedOutputStream bos;
         String fileID;
         int attempt;
-        boolean answered, fail = false;
+        boolean answered, fail;
         long t0, t1;
         byte[] chunkBuf, buf;
         ArrayList<String[]> chunkInfo, fileInfo, filter;
@@ -54,13 +54,14 @@ public class RestoreProtocol {
             fileID = Util.filterFiles(fileInfo, args[1])[1];
             filter = Util.filterChunks(chunkInfo, fileID);
             peerPacket = new DatagramPacket(chunkBuf, chunkBuf.length);
+            fail = false;
             for (String[] chunk : filter) {
                 buf = buildHeader(chunk).getBytes(StandardCharsets.ISO_8859_1);
                 controlPacket = new DatagramPacket(buf, buf.length, Peer.getMCip(), Peer.MCport);
+                answered = false;
                 attempt = 0;
                 do {
                     controlSocket.send(controlPacket);
-                    answered = false;
                     t0 = System.currentTimeMillis();
                     do {
                         try {
@@ -76,7 +77,8 @@ public class RestoreProtocol {
                             break;
                         t1 = System.currentTimeMillis();
                     } while (t1 - t0 < 1000);
-                } while (!answered && attempt <= 5);
+                    attempt++;
+                } while (!answered && attempt <= 10);
                 if (answered) {
                     String s = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
                     int i = s.indexOf("\r\n\r\n");
