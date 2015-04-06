@@ -40,7 +40,7 @@ public class RestoreThread extends Thread {
                 String s = new String(requestPacket.getData(), 0, requestPacket.getLength(), StandardCharsets.ISO_8859_1);
                 int i = s.indexOf("\r\n\r\n");
                 s = new String(requestPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
-                System.out.println("RestoreThread - Received from " + peerPacket.getAddress() + ": " + s);
+                System.out.println("RestoreThread - Received from " + requestPacket.getAddress() + ": " + s);
                 token = s.split("[ ]+");
                 if (validRequest(token)) {
                     answered = false;
