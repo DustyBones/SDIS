@@ -61,8 +61,8 @@ public class BackupProtocol {
                             String z = new String(ackPacket.getData(), 0, ackPacket.getLength(), StandardCharsets.ISO_8859_1);
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(ackPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
-                            System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ":" +
-                                    ackPacket.getPort() + " : " + z);
+                            System.out.println("BackupProtocol  - Received from " + ackPacket.getAddress() + ":" +
+                                    ackPacket.getPort() + " | " + z);
                             if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
                                 saved++;
                             }
@@ -105,7 +105,7 @@ public class BackupProtocol {
                 Util.saveRemoteChunkInfo(chunkInfo);
                 Util.saveFileInfo(fileInfo);
             }
-            System.out.println("BackupProtocol - Finished");
+            System.out.println("BackupProtocol  - Finished");
         } catch (Exception ignore) {
             //e.printStackTrace();
         }

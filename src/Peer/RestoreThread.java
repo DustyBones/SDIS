@@ -42,8 +42,8 @@ public class RestoreThread extends Thread {
                 s = new String(requestPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 token = s.split("[ ]+");
                 if (validRequest(token)) {
-                    System.out.println("RestoreThread - Received from " + requestPacket.getAddress() + ":" +
-                            requestPacket.getPort() + " : " + s);
+                    System.out.println("RestoreThread   - Received from " + requestPacket.getAddress() + ":" +
+                            requestPacket.getPort() + " | " + s);
                     answered = false;
                     time = Util.getRandomInt(400);
                     t0 = System.currentTimeMillis();
@@ -58,8 +58,8 @@ public class RestoreThread extends Thread {
                             String z = new String(peerPacket.getData(), 0, peerPacket.getLength(), StandardCharsets.ISO_8859_1);
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
-                            System.out.println("RestoreThread - Received from " + peerPacket.getAddress() + ":"
-                                    + peerPacket.getPort() + " : " + z);
+                            System.out.println("RestoreThread   - Received from " + peerPacket.getAddress() + ":"
+                                    + peerPacket.getPort() + " | " + z);
                             answered = peerAnswered(peerPacket, token);
                         } catch (Exception ignore) {
                         }

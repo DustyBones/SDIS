@@ -21,7 +21,7 @@ public class DeleteProtocol {
             fileInfo = Util.loadFileInfo();
             file = new File(args[1]);
             if (!Util.fileExists(fileInfo, file)) {
-                System.out.println("DeleteProtocol - File was not backed up");
+                System.out.println("DeleteProtocol  - File was not backed up");
                 return;
             }
             multicastSocket = new MulticastSocket();
@@ -45,7 +45,7 @@ public class DeleteProtocol {
             Util.saveFileInfo(fileInfo);
             Util.saveRemoteChunkInfo(chunkInfo);
             multicastSocket.close();
-            System.out.println("DeleteProtocol - Finished");
+            System.out.println("DeleteProtocol  - Finished");
         } catch (Exception e) {
             e.printStackTrace();
         }

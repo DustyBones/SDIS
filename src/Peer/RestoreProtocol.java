@@ -70,7 +70,7 @@ public class RestoreProtocol {
                             int j = z.indexOf("\r\n\r\n");
                             z = new String(peerPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
                             System.out.println("RestoreProtocol - Received from " + peerPacket.getAddress() + ":" +
-                                    peerPacket.getPort() + " :" + peerPacket.getPort() + " : " + z);
+                                    peerPacket.getPort() + " | " + peerPacket.getPort() + " : " + z);
                             answered = peerAnswered(peerPacket, chunk);
                         } catch (Exception ignore) {
                         }

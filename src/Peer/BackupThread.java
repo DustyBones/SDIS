@@ -42,8 +42,8 @@ public class BackupThread extends Thread {
                 int i = received.indexOf("\r\n\r\n");
                 received = new String(chunkPacket.getData(), 0, i, StandardCharsets.ISO_8859_1);
                 body = Arrays.copyOfRange(chunkPacket.getData(), i + 4, chunkPacket.getLength());
-                System.out.println("BackupThread - Received from " + chunkPacket.getAddress().toString() + ":" +
-                        chunkPacket.getPort() + " : " + received);
+                System.out.println("BackupThread  - Received from " + chunkPacket.getAddress().toString() + ":" +
+                        chunkPacket.getPort() + " | " + received);
                 if (header[0].equals("PUTCHUNK")) {
                     ip = new ArrayList<>();
                     saved = 1;
