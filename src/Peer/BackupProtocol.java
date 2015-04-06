@@ -60,6 +60,10 @@ public class BackupProtocol {
                     do {
                         try {
                             controlSocket.receive(ackPacket);
+                            String z = new String(ackPacket.getData(), 0, ackPacket.getLength(), StandardCharsets.ISO_8859_1);
+                            int j = z.indexOf("\r\n\r\n");
+                            z = new String(ackPacket.getData(), 0, j, StandardCharsets.ISO_8859_1);
+                            System.out.println("BackupProtocol - Received from " + ackPacket.getAddress() + ": " + z);
                             if (validateAcknowledge(ackPacket, IPlist, fileID, chunkN)) {
                                 saved++;
                             }

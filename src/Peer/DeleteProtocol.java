@@ -36,12 +36,13 @@ public class DeleteProtocol {
                 Util.wait(1000);
             }
             for (String[] chunk : filter) {
-                filter.remove(chunk);
+                chunkInfo.remove(chunk);
             }
             fileInfo.remove(file);
             Util.saveFileInfo(fileInfo);
             Util.saveChunkInfo(chunkInfo);
             controlSocket.close();
+            System.out.println("Deletion complete.");
         } catch (Exception e) {
             e.printStackTrace();
         }
