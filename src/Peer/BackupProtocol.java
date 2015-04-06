@@ -25,7 +25,7 @@ public class BackupProtocol {
         ArrayList<String[]> chunkInfo, fileInfo;
 
         try {
-            chunkInfo = Util.loadRemoteChunkInfo();
+            chunkInfo = (chunk ? Util.loadLocalChunkInfo() : Util.loadRemoteChunkInfo());
             fileInfo = Util.loadFileInfo();
             file = new File(chunk ? args[0] + ".part" + args[1] : args[1]);
 
@@ -80,12 +80,21 @@ public class BackupProtocol {
                 temp[2] = k + "";
                 temp[3] = args[2];
                 temp[4] = saved + "";
+                if (chunk) {
+                    String[] chunkToRemove = new String[5];
+                    for (String[] c : chunkInfo) {
+                        if (c[0].equals(temp[0]) && c[1].equals(temp[1]))
+                            chunkToRemove = c;
+                    }
+                    chunkInfo.remove(chunkToRemove);
+                }
                 chunkInfo.add(temp);
                 chunkN++;
             }
             temp = new String[2];
             temp[0] = file.getName();
             temp[1] = fileID;
+
             fileInfo.add(temp);
             backupSocket.leaveGroup(Peer.getMCBip());
             backupSocket.close();
@@ -128,6 +137,4 @@ public class BackupProtocol {
         }
         return false;
     }
-
-
 }

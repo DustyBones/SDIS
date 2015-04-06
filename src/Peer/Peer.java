@@ -55,7 +55,7 @@ public class Peer {
             MCRport = Integer.parseInt(args[5]);
         } else {
             System.out
-                    .println("Wrong number of arguments. Expected \"Server <MCip> <MCport> <MCBip> <MCBport> <MCRip> <MCRport>\"");
+                    .println("Wrong number of arguments. Expected \"Server <MC ip> <MC port> <MCB ip> <MCB port> <MCR ip> <MCR port>\"");
             return;
         }
 
@@ -92,6 +92,7 @@ public class Peer {
                                 "\tbackup <filename> <replication factor>\n" +
                                 "\trestore <filename>\n" +
                                 "\tdelete <filename>\n" +
+                                "\treclaim\n" +
                                 "\texit\n");
                         break;
                     default:

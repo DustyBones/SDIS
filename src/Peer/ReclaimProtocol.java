@@ -36,6 +36,7 @@ public class ReclaimProtocol {
                     controlSocket.send(controlPacket);
                     localChunkInfo.remove(chunk);
                     file = new File(chunk[0] + ".part" + chunk[1]);
+                    System.out.println(file.getName());
                     file.delete();
                     savings += Integer.parseInt(chunk[2]);
                 } catch (Exception e) {
